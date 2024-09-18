@@ -40,6 +40,7 @@ from videollava.mm_utils import tokenizer_image_token
 from PIL import Image
 from videollava.utils import order_pick_k
 
+from videollava.constants import SGSpecialTokens
 local_rank = None
 
 
@@ -114,6 +115,9 @@ class TrainingArguments(transformers.TrainingArguments):
     lora_bias: str = "none"
     mm_projector_lr: Optional[float] = None
     group_by_modality_length: bool = field(default=False)
+
+    train_video_tower: bool = False
+    save_tokenizer: bool = False
 
     # ================================================
     tokenizer_model_max_length: Optional[int] = None
@@ -342,6 +346,7 @@ def preprocess_multimodal(
 
             # a <video> is treated as `num_frames * <image>`
             replace_token, vid_replace_token = DEFAULT_IMAGE_TOKEN, DEFAULT_IMAGE_TOKEN * data_args.num_frames
+            # replace_token, vid_replace_token = DEFAULT_IMAGE_TOKEN, f"{SGSpecialTokens.VIDEO_FRAME_ID}{DEFAULT_IMAGE_TOKEN}" * data_args.num_frames   # JAAIMIN Changes
             if data_args.mm_use_im_start_end:
                 replace_token = DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
                 vid_replace_token = DEFAULT_VID_START_TOKEN + vid_replace_token + DEFAULT_VID_END_TOKEN
@@ -478,8 +483,12 @@ def preprocess_v1(
 
     assert conv.sep_style == conversation_lib.SeparatorStyle.TWO
 
+    """
+    sep=" ",
+    sep2="</s>",
+    """
     # Mask targets
-    sep = conv.sep + conv.roles[1] + ": "
+    sep = conv.sep + conv.roles[1] + ": "  ## " ASSISTANT: "
     for conversation, target in zip(conversations, targets):
         total_len = int(target.ne(tokenizer.pad_token_id).sum())
 
@@ -717,6 +726,10 @@ class LazySupervisedDataset(Dataset):
             if isinstance(i, int):
                 sources = [sources]
             assert len(sources) == 1, "Don't know why it is wrapped to a list"  # FIXME
+
+            """Changes: Jaimin"""
+            frame_indices = self.list_data_dict[i]['frame_indices']
+            total_frames = self.list_data_dict[i]['total_frames']
             # ======================================================================================================
             if 'image' in sources[0] and 'video' not in sources[0]:
                 # rank0_print('image')
@@ -743,7 +756,7 @@ class LazySupervisedDataset(Dataset):
                 video_file = video_file if isinstance(video_file, list) else [video_file]
                 video_file = order_pick_k(video_file, MAX_VIDEO_LENGTH)
                 video = [os.path.join(video_folder, file) for file in video_file]
-                image = [video_processor(i, return_tensors='pt')['pixel_values'][0] for i in video]  # fake image
+                image = [video_processor(i, return_tensors='pt',frame_indices=frame_indices,total_frames=total_frames)['pixel_values'][0] for i in video]  # fake image
                 # image = [torch.randn(3, 8, 224, 224) for i in video]  # fake image
                 sources = preprocess_multimodal(copy.deepcopy([e["conversations"] for e in sources]), self.data_args)
                 # print('after preprocess_multimodal', sources[0])
@@ -773,7 +786,7 @@ class LazySupervisedDataset(Dataset):
                 video_file = video_file if isinstance(video_file, list) else [video_file]
                 video_file = order_pick_k(video_file, MAX_VIDEO_LENGTH)
                 video = [os.path.join(video_folder, file) for file in video_file]
-                video = [video_processor(i, return_tensors='pt')['pixel_values'][0] for i in video]  # fake image
+                video = [video_processor(i, return_tensors='pt',frame_indices=frame_indices,total_frames=total_frames)['pixel_values'][0] for i in video]  # fake image
 
                 image = video + image  # video must before image
 
@@ -887,6 +900,18 @@ def train():
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
 
+    # wandb 
+    os.environ["WANDB_PROJECT"]="video-llava-vidvrd"
+    # save your trained model checkpoint to wandb
+    os.environ["WANDB_LOG_MODEL"]="false"
+    # turn off watch to log faster
+    os.environ["WANDB_WATCH"]="false"
+
+    # wandb.init(
+    #     # set the wandb project where this run will be logged
+    #     project="my-awesome-project",
+    # )
+
     bnb_model_from_pretrained_args = {}
     if training_args.bits in [4, 8]:
         from transformers import BitsAndBytesConfig
@@ -996,6 +1021,33 @@ def train():
             conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version]
         else:
             conversation_lib.default_conversation = conversation_lib.conv_templates["vicuna_v1"]
+    
+    ## Jaimin Changes
+    # smart_tokenizer_and_embedding_resize(
+    #     special_tokens_dict=dict(additional_special_tokens=['#frameseg', '#END_REL']),
+    #     tokenizer=tokenizer,
+    #     model=model,
+    # )
+    
+
+    # special_tokens = SGSpecialTokens.get_tokens()
+    # smart_tokenizer_and_embedding_resize(
+    #     special_tokens_dict=dict(additional_special_tokens=special_tokens),
+    #     tokenizer=tokenizer,
+    #     model=model,
+    # )
+
+    """HF example"""
+    # special_tokens_dict = {"cls_token": "<CLS>"}
+    # num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
+    # print("We have added", num_added_toks, "tokens")
+    # # Notice: resize_token_embeddings expect to receive the full size of the new vocabulary, i.e., the length of the tokenizer.
+    # model.resize_token_embeddings(len(tokenizer))
+
+    # version 17_1 trained
+    # num_added_toks = tokenizer.add_tokens(special_tokens, special_tokens=True) ##This line is updated
+    # model.resize_token_embeddings(len(tokenizer))
+    # print(tokenizer.all_special_tokens)
 
     # =============================================================================================================
     if model_args.image_tower is not None or model_args.video_tower is not None:
@@ -1042,6 +1094,11 @@ def train():
         if training_args.bits in [4, 8]:
             model.get_model().mm_projector.to(dtype=compute_dtype, device=training_args.device)
 
+        if training_args.train_video_tower:
+            #Jaimin Enable CLIP training
+            for p in model.get_model().video_tower.parameters():
+                p.requires_grad = True
+
         model.config.mm_use_im_start_end = data_args.mm_use_im_start_end = model_args.mm_use_im_start_end
         model.config.mm_projector_lr = training_args.mm_projector_lr
         training_args.use_im_start_end = model_args.mm_use_im_start_end
@@ -1087,6 +1144,12 @@ def train():
             model.config.save_pretrained(training_args.output_dir)
             model.save_pretrained(training_args.output_dir, state_dict=state_dict)
             torch.save(non_lora_state_dict, os.path.join(training_args.output_dir, 'non_lora_trainables.bin'))
+            if training_args.save_tokenizer:
+                ## Jaimin changes (since new tokens are added)
+                try:
+                    tokenizer.save_pretrained(training_args.output_dir)
+                except Exception as e:
+                    print(f"Failed saving tokenizer {e}")
     else:
         safe_save_model_for_hf_trainer(trainer=trainer,
                                        output_dir=training_args.output_dir)

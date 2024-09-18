@@ -1,15 +1,15 @@
 #!/bin/bash
 # JSON_FOLDER="/home/jbhol/dso/gits/OpenPVSG/data/video_llava_annotations_v19_w_bb"
-JSON_FOLDER="/home/jbhol/dso/gits/OpenPVSG/data/video_llava_annotations_v19_wo_bb"
-IMAGE_FOLDER="/lustre/fs1/home/jbhol/dso/gits/OpenPVSG/data/vidor/videos"
-VIDEO_FOLDER="/lustre/fs1/home/jbhol/dso/gits/OpenPVSG/data/vidor/videos"
+#JSON_FOLDER="/home/jbhol/dso/gits/OpenPVSG/data/video_llava_annotations_v19_wo_bb"
+#IMAGE_FOLDER="/lustre/fs1/home/jbhol/dso/gits/OpenPVSG/data/vidor/videos"
+#VIDEO_FOLDER="/lustre/fs1/home/jbhol/dso/gits/OpenPVSG/data/vidor/videos"
 
 ## vidvrd
-#JSON_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/video_llava_vidvrd_annotations_v2_1_nomax"
+JSON_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/video_llava_vidvrd_annotations_v2_1_nomax"
 ##JSON_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/video_llava_vidvrd_annotations_v3_1"
 #JSON_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/video_llava_vidvrd_annotations_v3"
-#IMAGE_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/videos"
-#VIDEO_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/videos"
+IMAGE_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/videos"
+VIDEO_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/videos"
 
 cd /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA
 
@@ -28,12 +28,12 @@ cd /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA
 # /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/checkpoints/lora256_alpha512/video_llava_vidvrd_annotations_v2_1_nomax/videollava-7b-lora
 # /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/checkpoints/video_llava_vidvrd_annotations_v2_1_nomax_e05/videollava-7b-lora
 
-HF_DATASETS_OFFLINE=1 TRANSFORMERS_OFFLINE=1 deepspeed  --master_port 24313  "/home/jbhol/dso/gits/Video-LLaVA/videollava/train/train_mem.py" \
+HF_DATASETS_OFFLINE=1 TRANSFORMERS_OFFLINE=1 deepspeed  --master_port 29313  "/home/jbhol/dso/gits/Video-LLaVA/videollava/train/train_mem.py" \
     --lora_enable True --lora_r 128 --lora_alpha 256 --mm_projector_lr 2e-5 \
     --deepspeed /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/zero2_offload.json \
     --model_name_or_path lmsys/vicuna-7b-v1.5 \
     --version v1 \
-    --data_path  ${JSON_FOLDER}/videochatgpt_tune_.json  \
+    --data_path  ${JSON_FOLDER}/videochatgpt_tune_part0.json ${JSON_FOLDER}/videochatgpt_tune_part1.json ${JSON_FOLDER}/videochatgpt_tune_part2.json ${JSON_FOLDER}/videochatgpt_tune_part3.json ${JSON_FOLDER}/videochatgpt_tune_part4.json ${JSON_FOLDER}/videochatgpt_tune_part5.json ${JSON_FOLDER}/videochatgpt_tune_part6.json ${JSON_FOLDER}/videochatgpt_tune_part7.json ${JSON_FOLDER}/videochatgpt_tune_part8.json ${JSON_FOLDER}/videochatgpt_tune_part9.json  \
     --image_folder ${IMAGE_FOLDER} \
     --image_tower LanguageBind/LanguageBind_Image \
     --video_folder ${VIDEO_FOLDER} \
@@ -46,8 +46,8 @@ HF_DATASETS_OFFLINE=1 TRANSFORMERS_OFFLINE=1 deepspeed  --master_port 24313  "/h
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[pvsg]video_llava_annotations_v19_wo_bb_ep05/videollava-7b-lora \
-    --num_train_epochs 5 \
+    --output_dir /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/checkpoints/tunemlp/video_llava_vidvrd_annotations_v2_1_nomax_p09_e10/videollava-7b-lora \
+    --num_train_epochs 10 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \

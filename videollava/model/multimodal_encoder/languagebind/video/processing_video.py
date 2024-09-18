@@ -2,6 +2,7 @@
 import torch
 import cv2
 import decord
+import random
 import numpy as np
 from PIL import Image
 from decord import VideoReader, cpu
@@ -68,6 +69,30 @@ def get_video_transform(config):
         raise NameError('video_decode_backend should specify in (pytorchvideo, decord, opencv)')
     return transform
 
+def validate_custom_frames(frame_indices,total_frames,num_frames=8):
+    """
+    num_frames=8
+    total_frames = total video frames
+    """
+    frame_indices_cnt = len(frame_indices)
+    if frame_indices_cnt>num_frames: # more frames, reduce it to num_frames=8
+        frame_indices = random.sample(frame_indices, num_frames)
+    elif frame_indices_cnt<num_frames: # need to select few more frames
+        diff_cnt = num_frames - frame_indices_cnt # how many frames are less
+        total_frame_indices = [i for i in range(total_frames)]
+        while diff_cnt>0:
+            if diff_cnt<=0:
+                break
+            rand_idx = random.choice(total_frame_indices)
+            if rand_idx in frame_indices:
+                continue
+            frame_indices.append(rand_idx)
+            diff_cnt -=1
+    else:
+        # same number of frames, no need to do anything
+        pass
+
+    return sorted(frame_indices)
 
 def load_and_transform_video(
         video_path,
@@ -76,7 +101,16 @@ def load_and_transform_video(
         clip_start_sec=0.0,
         clip_end_sec=None,
         num_frames=8,
+        frame_indices=None,
+        total_frames=None
 ):
+    """
+    Changes Jaimin: 
+    1. Instead of uniform sampling of frames, select frames which are provided from annotation. 
+    2. Adjust to 8 frames as required by language-bind video encoder.
+    """
+
+    # print("video_decode_backend", video_decode_backend)
     if video_decode_backend == 'pytorchvideo':
         #  decord pyav
         video = EncodedVideo.from_path(video_path, decoder="decord", decode_audio=False)
@@ -91,6 +125,10 @@ def load_and_transform_video(
         decord_vr = VideoReader(video_path, ctx=cpu(0))
         duration = len(decord_vr)
         frame_id_list = np.linspace(0, duration-1, num_frames, dtype=int)
+        if frame_indices is not None:
+            frame_indices = validate_custom_frames(frame_indices=frame_indices,total_frames=total_frames,num_frames=num_frames)
+            frame_id_list  = frame_indices
+            #print("found custom frame indices", frame_id_list)
         video_data = decord_vr.get_batch(frame_id_list)
         video_data = video_data.permute(3, 0, 1, 2)  # (T, H, W, C) -> (C, T, H, W)
         video_outputs = transform(video_data)
@@ -99,6 +137,10 @@ def load_and_transform_video(
         cv2_vr = cv2.VideoCapture(video_path)
         duration = int(cv2_vr.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_id_list = np.linspace(0, duration-1, num_frames, dtype=int)
+        if frame_indices is not None:
+            frame_indices = validate_custom_frames(frame_indices=frame_indices,total_frames=total_frames,num_frames=num_frames)
+            frame_id_list  = frame_indices
+            # print("found custom frame indices", frame_id_list)
 
         video_data = []
         for frame_idx in frame_id_list:
@@ -131,12 +173,25 @@ class LanguageBindVideoProcessor(ProcessorMixin):
         if text is not None:
             encoding = self.tokenizer(text, max_length=context_length, padding='max_length',
                                       truncation=True, return_tensors=return_tensors, **kwargs)
+            
+        
+        """
+            Changes Jaimin: 
+            1. Parse arugments for frame_indices and total_frames from kwargs
+            2. Pass these arugments to load_and_transform_video() i.e self.image_processor.
+        """
+        frame_indices,total_frames = None, None
+        if "frame_indices" in kwargs:
+            frame_indices = kwargs["frame_indices"]
+
+        if "total_frames" in kwargs:
+            total_frames = kwargs["total_frames"]
 
         if images is not None:
             images = make_list_of_images(images)
             image_features = [self.image_processor(image, self.transform,
                                                    video_decode_backend=self.config.vision_config.video_decode_backend,
-                                                   num_frames=self.config.vision_config.num_frames) for image in images]
+                                                   num_frames=self.config.vision_config.num_frames,frame_indices=frame_indices,total_frames=total_frames) for image in images]
             image_features = torch.stack(image_features)
 
         if text is not None and images is not None:
