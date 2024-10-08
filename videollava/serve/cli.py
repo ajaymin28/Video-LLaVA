@@ -24,6 +24,8 @@ import cv2
 from typing import Dict
 import transformers
 
+# from peft.utils.scaling_utils import set_adapter_scale
+
 def smart_tokenizer_and_embedding_resize(
     special_tokens_dict: Dict,
     tokenizer: transformers.PreTrainedTokenizer,
@@ -70,6 +72,7 @@ def main(args):
     model_name = get_model_name_from_path(args.model_path)
     tokenizer, model, processor, context_len = load_pretrained_model(args.model_path, args.model_base, model_name,
                                                                      args.load_8bit, args.load_4bit,
+                                                                     use_custom_tokenizer=True,
                                                                      device=args.device, cache_dir=args.cache_dir)
 
     # num_added_toks = tokenizer.add_tokens(['<frameseg>'], special_tokens=True) ##This line is updated
@@ -108,7 +111,8 @@ def main(args):
 
     tensor = []
     special_token = []
-    frame_indices = [i for i in range(0,8)]
+    # frame_indices = [i for i in range(0,8)]
+    frame_indices = [0,1,2,40,42,43,70,71,72,73]
     # frame_indices = [8,9,10,20,30,40,50,60,70,80]
     args.file = args.file if isinstance(args.file, list) else [args.file]
     for file in args.file:
@@ -233,23 +237,23 @@ def main(args):
                 use_cache=True,
                 stopping_criteria=[stopping_criteria])
 
-        outputs = tokenizer.decode(output_ids[0, input_ids.shape[1]:]).strip()
-        conv.messages[-1][-1] = outputs
+            outputs = tokenizer.decode(output_ids[0, input_ids.shape[1]:]).strip()
+            conv.messages[-1][-1] = outputs
 
-        if args.debug:
-            print("\n", {"prompt": prompt, "outputs": outputs}, "\n")
+            if args.debug:
+                print("\n", {"prompt": prompt, "outputs": outputs}, "\n")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-path", type=str, default="/home/jbhol/dso/gits/Video-LLaVA/checkpoints/video_llava_annotations_v16_e10/videollava-7b-lora")
-    parser.add_argument("--model-base", type=str, default="lmsys/vicuna-7b-v1.5")
+    parser.add_argument("--model-base", type=str, default=None)
     parser.add_argument("--cache-dir", type=str, default=None)
     parser.add_argument("--file", nargs='+', type=str,default="/lustre/fs1/home/jbhol/dso/gits/OpenPVSG/data/vidor/videos/0018_4748191834.mp4", required=False)
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--conv-mode", type=str, default=None)
-    parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--max-new-tokens", type=int, default=2500)
+    parser.add_argument("--temperature", type=float, default=0.2)
+    parser.add_argument("--max-new-tokens", type=int, default=3000)
     parser.add_argument("--load-8bit", action="store_true")
     parser.add_argument("--load-4bit", action="store_true")
     parser.add_argument("--debug", action="store_true")

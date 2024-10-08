@@ -3,41 +3,110 @@ from PIL import Image
 import numpy as np
 import random
 
+def get_substring_between(s, start_substring, end_substring):
+    try:
+        # Find the index of the start and end substrings
+        start_index = s.find(start_substring)
+        end_index = s.find(end_substring, start_index)
 
-def remove_ids(frames_tripletes):
-    for f_idx, triplets in enumerate(frames_tripletes):
-        for idx, trip in enumerate(triplets):
+        # If start or end substring is not found, return None
+        if start_index == -1 or end_index == -1:
+            return None
+
+        start_index = start_index + len(start_substring)
+        # Extract the substring from the start to the end substring
+        return s[start_index:end_index + len(end_substring)]
+    
+    except Exception as e:
+        return str(e)
+
+def remove_ids_V2(frames_tripletes, version="v2_1"):
+    for idx, trip in enumerate(frames_tripletes):
+        if version=="v2_1":
             subj, rel, obj = trip
-            subj = subj.split("-")[0]
-            obj = obj.split("-")[0]
-            frames_tripletes[f_idx][idx] =  [subj, rel, obj]
+        elif version=="v3_1":
+            subj, obj, rel = trip
+        
+        subj = subj.split("-")[0]
+        obj = obj.split("-")[0]
+
+        # if version=="v2_1":
+        frames_tripletes[idx] =  [subj, rel, obj]
+        # elif version=="v3_1":
+        # frames_tripletes[f_idx][idx] =  [subj, obj, rel]
 
     return frames_tripletes
 
-def eval_tagging_scores(gt_relations, pred_relations, min_pred_num=0):
+def remove_ids(frames_tripletes, version="v2_1"):
+    for f_idx, triplets in enumerate(frames_tripletes):
+        for idx, trip in enumerate(triplets):
+            if version=="v2_1":
+                subj, rel, obj = trip
+            elif version=="v3_1":
+                subj, obj, rel = trip
+            
+            subj = subj.split("-")[0]
+            obj = obj.split("-")[0]
+
+            # if version=="v2_1":
+            frames_tripletes[f_idx][idx] =  [subj, rel, obj]
+            # elif version=="v3_1":
+            # frames_tripletes[f_idx][idx] =  [subj, obj, rel]
+
+    return frames_tripletes
+
+def eval_tagging_scores(gt_relations, pred_relations, min_pred_num=1):
     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
-    # ignore trajectories
     gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
     pred_triplets = []
-    hit_scores = []
     for r in pred_relations:
         triplet = tuple(r['triplet'])
         if not triplet in pred_triplets:
             pred_triplets.append(triplet)
-            hit_scores.append(r['score'])
-            
-    hit_scores.extend([-np.inf]*(min_pred_num-len(hit_scores)))
-    hit_scores = np.asarray(hit_scores)
+    gt_hit_scores = []
+    for r in gt_relations:
+        gt_hit_scores.append(-np.inf)
+    gt_hit_scores.extend([-np.inf]*(min_pred_num-len(gt_hit_scores)))
+    gt_hit_scores = np.asarray(gt_hit_scores)
+
+    fp_cnt, tp_cnt = 0,0 
+    for i, t in enumerate(gt_triplets):
+        if t in pred_triplets:
+            gt_hit_scores[i] = 1
+            tp_cnt +=1
     for i, t in enumerate(pred_triplets):
-        if not t in gt_triplets:
-            hit_scores[i] = -np.inf
-    tp = np.isfinite(hit_scores)
-    fp = ~tp
-    cum_tp = np.cumsum(tp).astype(np.float32)
-    cum_fp = np.cumsum(fp).astype(np.float32)
-    rec = cum_tp / np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
-    prec = cum_tp / np.maximum(cum_tp + cum_fp, np.finfo(np.float32).eps)
-    return prec, rec, hit_scores
+        if t not in gt_triplets:
+            fp_cnt +=1
+
+    rec = tp_cnt/np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
+    prec = tp_cnt/np.maximum(tp_cnt+fp_cnt, np.finfo(np.float32).eps)
+
+    return prec, rec, gt_hit_scores
+
+# def eval_tagging_scores_vrdformer(gt_relations, pred_relations, min_pred_num=0):
+#     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
+#     # ignore trajectories
+#     gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
+#     pred_triplets = []
+#     hit_scores = []
+#     for r in pred_relations:
+#         triplet = tuple(r['triplet'])
+#         if not triplet in pred_triplets:
+#             pred_triplets.append(triplet)
+#             hit_scores.append(r['score'])
+ 
+#     hit_scores.extend([-np.inf]*(min_pred_num-len(hit_scores)))
+#     hit_scores = np.asarray(hit_scores)
+#     for i, t in enumerate(pred_triplets):
+#         if not t in gt_triplets:
+#             hit_scores[i] = -np.inf
+#     tp = np.isfinite(hit_scores)
+#     fp = ~tp
+#     cum_tp = np.cumsum(tp).astype(np.float32)
+#     cum_fp = np.cumsum(fp).astype(np.float32)
+#     rec = cum_tp / np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
+#     prec = cum_tp / np.maximum(cum_tp + cum_fp, np.finfo(np.float32).eps)
+#     return prec, rec, hit_scores
 
 def calculate_accuracy_varying_lengths(gt_triplets, pred_triplets, remove_duplicates=True):
     """
@@ -491,6 +560,80 @@ def validate_model_response(model_response):
     
 #     return frame_triplets
 
+def pre_clean_prediction_data_onevision_v6(model_response, fileData=None):
+    frame_triplets = []
+    prediction_data = model_response
+    prediction_data = prediction_data.strip("</s>").lower()
+
+    if "#sg_start" in prediction_data and "#sg_end" in prediction_data:
+        # print(cleanString)
+        try:
+            cleanString = get_substring_between(s=prediction_data,start_substring="#sg_start",end_substring="#sg_end")
+            comment_str = "// This triplet is not necessary as it does not provide additional information.\n"
+            if comment_str in cleanString:
+                cleanString = cleanString.replace(comment_str, "")
+
+            evaluated_string_json = eval(cleanString)
+
+            for key,frame_data in evaluated_string_json.items():
+                if key=="scene" or key=="st progression":
+                    continue
+                # strkey = str(key)
+                # strkey_f_index = strkey.strip("F")  # F1 ==> 1
+                current_frame_triplets = []
+                for frame_triplet in frame_data["triplets"]:
+                    if len(frame_triplet)==3:
+                        current_frame_triplets.append(frame_triplet)
+                    else:
+                        print("invalid length for triplet",frame_triplet)
+                frame_triplets.append(current_frame_triplets)
+
+        except Exception as e:
+            print(e, fileData)
+            print("model response", model_response)
+            pass
+
+    return frame_triplets
+
+
+def pre_clean_prediction_data_v7_with_time(model_response):
+    frame_triplets = []
+    frame_triplets_time_windows = []
+    prediction_data = model_response
+    prediction_data = prediction_data.strip("</s>")
+    try:
+        Triplets = prediction_data.split(";")
+        for cnt_idx, triplets_data in enumerate(Triplets):
+            if len(triplets_data)<2:
+                continue
+
+            # [red panda-0:lie next to:red panda-1]_[Frame-0:Frame-7]
+            triplets_data = triplets_data.replace(f":", ",")
+
+            triplets_data = triplets_data.split("_")
+            triplet = triplets_data[0]
+            triplet_time = triplets_data[1]
+
+            triplet_time = triplet_time.strip("[").strip("]")
+            triplet_time = triplet_time.split(",")
+            triplet_start = int(triplet_time[0].split("-")[-1])
+            triplet_end = int(triplet_time[1].split("-")[-1])
+
+            ftr_temp = triplet.split(",")
+            # print(ftr_temp)
+            ftr_temp[0] = str(ftr_temp[0]).strip("[").strip("]")
+            ftr_temp[1] = str(ftr_temp[1]).strip("[").strip("]")
+            ftr_temp[2] = str(ftr_temp[2]).strip("[").strip("]")  
+
+            frame_triplets.append(ftr_temp)
+            frame_triplets_time_windows.append([triplet_start,triplet_end])
+    
+    except Exception as e:
+        print("Exception ", e)
+        pass
+    
+    return frame_triplets, frame_triplets_time_windows
+
 def pre_clean_prediction_data_v18(model_response):
     frame_triplets = []
     prediction_data = model_response
@@ -499,6 +642,8 @@ def pre_clean_prediction_data_v18(model_response):
 
     special_tokens = SGSpecialTokens.get_tokens()
     for cnt_idx, ftriplets in enumerate(framewiseTriplets):
+        if cnt_idx>7:
+            break
 
         for spetok in special_tokens:
             ftriplets = ftriplets.replace(f"{spetok}", "")

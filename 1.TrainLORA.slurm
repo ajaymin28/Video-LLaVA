@@ -6,8 +6,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=h100
 #SBATCH --gres-flags=enforce-binding
-#SBATCH --job-name=v5_3_e03_varying_prompt_alpha256_video_llava_vidvrd_annotations_withsysmsg
-#SBATCH --time=3-24:00:00
+#SBATCH --job-name=v7_time_e01_varying_prompt_alpha256_video_llava_vidvrd_annotations
+#SBATCH --time=1-24:00:00
 #SBATCH --output=/lustre/fs1/home/jbhol/dso/jobs/%x_raw_%j.out
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=ja882177@ucf.edu
@@ -73,12 +73,33 @@ wandb login 8350cb094ed6779c41f439917838bbe922b6bec2
 
 ## v5_3 varying list
 #python /home/jbhol/dso/gits/VRDFormer_VRD/prepare_video_llava_v5_2.py
-bash "/lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lora.sh"
-CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v5_2_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03 --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03/videollava-7b-lora  --file=""
+#bash "/lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lora.sh"
+#CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v5_2_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03 --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03/videollava-7b-lora  --file=""
 
 
 ##v4_3
 ##bash "/lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lora_v4_3.sh"
-
 #Eval
 ###CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v3_1.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v4_3 --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v4_3/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --temperature=0.0 --file=""
+
+## v6
+##bash "/lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lora.sh"
+##/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v6_e03/videollava-7b-lora
+
+## v6 ep01
+##bash "/lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lora.sh"
+##CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v6_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v6_e01_fast --model-path="/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v6_e01/videollava-7b-lora" --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.2
+
+
+##v7 ep03
+#bash "/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lorav7.sh"
+##/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v7_e03/videollava-7b-lora
+
+
+#v7 with time
+bash "/lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/v1_5/finetune_lora.sh"
+##/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v7_withtime_e03/videollava-7b-lora \
+
+
+
+

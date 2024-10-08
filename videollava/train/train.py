@@ -40,7 +40,6 @@ from videollava.mm_utils import tokenizer_image_token
 from PIL import Image
 from videollava.utils import order_pick_k
 
-from videollava.constants import SGSpecialTokens
 local_rank = None
 
 
@@ -116,7 +115,7 @@ class TrainingArguments(transformers.TrainingArguments):
     mm_projector_lr: Optional[float] = None
     group_by_modality_length: bool = field(default=False)
 
-    train_video_tower: bool = False
+    # train_video_tower: bool = False
     save_tokenizer: bool = False
 
     # ================================================
@@ -900,18 +899,6 @@ def train():
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
 
-    # wandb 
-    os.environ["WANDB_PROJECT"]="video-llava-vidvrd"
-    # save your trained model checkpoint to wandb
-    os.environ["WANDB_LOG_MODEL"]="false"
-    # turn off watch to log faster
-    os.environ["WANDB_WATCH"]="false"
-
-    # wandb.init(
-    #     # set the wandb project where this run will be logged
-    #     project="my-awesome-project",
-    # )
-
     bnb_model_from_pretrained_args = {}
     if training_args.bits in [4, 8]:
         from transformers import BitsAndBytesConfig
@@ -974,6 +961,7 @@ def train():
 
     if training_args.lora_enable:
         from peft import LoraConfig, get_peft_model
+        print("Lora target modules",find_all_linear_names(model))
         lora_config = LoraConfig(
             r=training_args.lora_r,
             lora_alpha=training_args.lora_alpha,
@@ -1094,10 +1082,10 @@ def train():
         if training_args.bits in [4, 8]:
             model.get_model().mm_projector.to(dtype=compute_dtype, device=training_args.device)
 
-        if training_args.train_video_tower:
-            #Jaimin Enable CLIP training
-            for p in model.get_model().video_tower.parameters():
-                p.requires_grad = True
+        # if training_args.train_video_tower:
+        #     #Jaimin Enable CLIP training
+        #     for p in model.get_model().video_tower.parameters():
+        #         p.requires_grad = True
 
         model.config.mm_use_im_start_end = data_args.mm_use_im_start_end = model_args.mm_use_im_start_end
         model.config.mm_projector_lr = training_args.mm_projector_lr

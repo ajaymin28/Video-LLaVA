@@ -18,7 +18,8 @@ Detect_Count_objects = {
 
 
 Prompts_ = {
-    "default": Prompts.v9_prompt,
+    "default": Prompts.v10_prompt,
+    "version_9": Prompts.v9_prompt,
     "version_8": Prompts.v8_prompt,
     "version_7": Prompts.v7_prompt,
     "version_6": Prompts.v6_prompt,

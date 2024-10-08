@@ -13,7 +13,106 @@ List_of_predicates = []
 
 # Task: Generate scene graph triplets from the given video in the format [subject-#id, predicate, object-#id].
 
-#   
+#
+# 
+# 
+
+predicates_numbered = """1.jump right 2.stand left 3.taller 4.jump past 5.jump behind 6.stand front 7.sit next to 8.sit behind 9.sit front 10.next to 11.front 12.stand next to 13.stand behind 14.walk right 15.walk next to 16.walk left 17.walk past 18.walk front 19.walk behind 20.faster 21.larger 22.stand with 23.stand right 24.walk with 25.walk toward 26.walk away 27.stop right 28.stop beneath 29.stand above 30.ride 31.run beneath 32.sit above 33.sit beneath 34.sit left 35.sit right 36.walk above 37.behind 38.watch 39.hold 40.feed 41.touch 42.right 43.left 44.follow 45.move front 46.move beneath 47.chase 48.run left 49.run right 50.lie next to 51.lie behind 52.play 53.move behind 54.jump beneath 55.fly with 56.fly past 57.move right 58.move left 59.swim front 60.swim left 61.move with 62.jump front 63.jump left 64.swim right 65.swim next to 66.jump next to 67.swim with 68.move past 69.bite 70.pull 71.jump toward 72.fight 73.run front 74.run behind 75.sit inside 76.drive 77.lie front 78.stop behind 79.lie left 80.stop left 81.lie right 82.creep behind 83.creep above 84.beneath 85.above 86.fall off 87.stop front 88.run away 89.run next to 90.away 91.jump away 92.fly next to 93.lie beneath 94.jump above 95.lie above 96.walk beneath 97.stand beneath 98.move toward 99.toward 100.past 101.move away 102.run past 103.fly behind 104.fly above 105.fly left 106.lie with 107.creep away 108.creep left 109.creep front 110.run with 111.run toward 112.creep right 113.creep past 114.fly front 115.fly right 116.fly away 117.fly toward 118.stop above 119.stand inside 120.kick 121.run above 122.swim beneath 123.jump with 124.lie inside 125.move above 126.move next to 127.creep next to 128.creep beneath 129.swim behind 130.stop next to 131.stop with 132.creep toward"""
+objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse 7.monkey 8.fox 9.elephant 10.lion 11.giant_panda 12.airplane 13.whale 14.watercraft 15.car 16.bird 17.cattle 18.rabbit 19.snake 20.frisbee 21.motorcycle 22.ball 23.domestic_cat 24.bear 25.red_panda 26.lizard 27.skateboard 28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
+Task_description_v10 = f"""The predefined objects_entity lexicon containing 35 lexemes is numbered as follows: {objects_numbered} \n\
+    and predefined relations_entity lexicon containing 132 lexemes is numbered as follows: {predicates_numbered} \n\
+    
+    Given the objects and relations lexeme, the task is to generate triplets from the video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon] using the predefined entity lexicon. 
+    The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
+
+    In-context Example 1:
+        #sg_start
+        {
+            "scene": { 
+                "description" : "Two lions move through the savanna, with the larger lion leading and the smaller lion following behind. Their positions emphasize their spatial relationship and size difference.",
+            },
+            "f1": {
+                "descriptions": ["The larger lion walks in front of the smaller lion.","The smaller lion stands behind the larger lion."],
+                "triplets": [["10.lion-0", "18.walk front", "10.lion-1"], ["10.lion-1", "13.stand behind", "10.lion-0"]]
+            },  
+            "f2": {
+                "descriptions": ["The larger lion continues walking ahead.","The smaller lion walks behind, keeping pace."],
+                "triplets": [["10.lion-0", "18.walk front", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            },  
+            "f3": {
+                "descriptions": ["The larger lion is taller than the smaller lion.","The smaller lion walks behind, following closely."],
+                "triplets": [["10.lion-0", "3.taller", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            },
+            "f4": {
+                "descriptions": ["The larger lion walks right while the smaller lion follows behind.","The size difference between the lions remains visible."],
+                "triplets": [["10.lion-0", "14.walk right", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            },
+            "f5": {
+                "descriptions": ["The larger lion walks toward the front, leading the way.","The smaller lion follows behind, staying close."],
+                "triplets": [["10.lion-0", "25.walk toward", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            },
+            "f6": {
+                "descriptions": ["The larger lion walks next to the smaller lion for a moment.","The lions maintain their positions."],
+                "triplets": [["10.lion-0", "15.walk next to", "10.lion-1"], ["10.lion-1", "10.next to", "10.lion-0"]]
+            },
+            "f7": {
+                "descriptions": ["The larger lion walks past the smaller lion.","The smaller lion stands behind, watching."],
+                "triplets": [["10.lion-0", "17.walk past", "10.lion-1"], ["10.lion-1", "13.stand behind", "10.lion-0"]]
+            },
+            "f8": {
+                "descriptions": ["The lions stop moving, the larger one still in front of the smaller lion.","The smaller lion sits behind the larger one."],
+                "triplets": [["10.lion-0", "87.stop front", "10.lion-1"], ["10.lion-1", "8.sit behind", "10.lion-0"]]
+            },
+            "st progression": "The scene shows the movement and spatial relationship of the two lions in the savanna. The larger lion consistently leads in size and position, with the smaller lion following closely behind or beside, eventually stopping behind the larger lion."
+        }
+        #sg_end
+
+    In-context Example 2:
+        #sg_start
+        {
+            "scene": { 
+                "description" : "Two bicycles and two people are interacting as they move through the scene, with the people riding and maneuvering the bicycles. The scene highlights their movements and spatial relationships.",
+            },
+            "f1": {
+                "descriptions": ["The first bicycle moves right of the second bicycle.","The first bicycle moves in front of the second bicycle."],
+                "triplets": [["5.bicycle-0", "57.move right", "5.bicycle-1"], ["5.bicycle-0", "45.move front", "5.bicycle-1"]]
+            },  
+            "f2": {
+                "descriptions": ["Both bicycles move together side by side.","The second bicycle follows the first."],
+                "triplets": [["5.bicycle-0", "61.move with", "5.bicycle-1"], ["5.bicycle-1", "61.move with", "5.bicycle-0"]]
+            },  
+            "f3": {
+                "descriptions": ["The second bicycle moves behind the first.","The second bicycle shifts to the left of the first."],
+                "triplets": [["5.bicycle-1", "19.move behind", "5.bicycle-0"], ["5.bicycle-1", "58.move left", "5.bicycle-0"]]
+            },
+            "f4": {
+                "descriptions": ["The first bicycle moves beneath the person.","The person sits above the first bicycle, riding it."],
+                "triplets": [["5.bicycle-0", "46.move beneath", "2.person-3"], ["2.person-3", "32.sit above", "5.bicycle-0"]]
+            },
+            "f5": {
+                "descriptions": ["The first bicycle moves right of another person.","The first bicycle moves in front of the other person."],
+                "triplets": [["5.bicycle-0", "57.move right", "2.person-5"], ["5.bicycle-0", "45.move front", "2.person-5"]]
+            },
+            "f6": {
+                "descriptions": ["The other person stands behind the first bicycle.","The other person stands left of the first bicycle."],
+                "triplets": [["2.person-5", "37.behind", "5.bicycle-0"], ["2.person-5", "44.left", "5.bicycle-0"]]
+            },
+            "f7": {
+                "descriptions": ["The second bicycle moves behind the person.","The second bicycle moves left of the person."],
+                "triplets": [["5.bicycle-1", "19.move behind", "2.person-3"], ["5.bicycle-1", "58.move left", "2.person-3"]]
+            },
+            "f8": {
+                "descriptions": ["The person sits above the second bicycle and rides it.","The two people align with each other, moving through the scene."],
+                "triplets": [["2.person-5", "32.sit above", "5.bicycle-1"], ["2.person-5", "61.move with", "2.person-3"]]
+            },
+            "st progression": "The two bicycles and two people move through the scene, interacting closely. The bicycles are ridden by the people, with movements emphasizing spatial relationships such as moving left, right, in front, and behind."
+        }
+        #sg_end
+
+    Now, from the provided video generate the triplets. Answer: 
+"""
+
+
 
 Task_description_v9 = """Identify and describe the objects in this video scene, their spatial positions relative to each other, and the actions they are performing over time. 
 Focus on extracting spatio-temporal relationships, and for each frame, provide triplets of the form [Subject, Relation, Object] where you describe the position, action, or change between objects. 
@@ -31,7 +130,7 @@ Also, describe how these interactions evolve as time progresses.
         - Do not use any relations if it does not accurately describe an action or spatial relationship between the objects present in the video.
     
     In-context Example 1:
-        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
+        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -59,7 +158,7 @@ Also, describe how these interactions evolve as time progresses.
         #sg_end
 
     In-context Example 2:
-        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
+        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -110,7 +209,7 @@ Also, describe how these interactions evolve as time progresses.
     
     In-context Example 1:
         Given list of Objects=[mountain, river,person, book, door,horse, train, plane,chair,monkey] and 
-        Relations/Actions/Temporal Changes=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
+        Relations/Actions/Temporal Changes=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -139,7 +238,7 @@ Also, describe how these interactions evolve as time progresses.
 
     In-context Example 2:
         Given list of Objects=[fence,mountain,river,person, book,ball,door,horse,park,train, plane,chair,monkey, dog] and 
-        Relations/Actions/Temporal Changes=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
+        Relations/Actions/Temporal Changes=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -187,7 +286,7 @@ Also, describe how these interactions evolve as time progresses.
         - Do not use any relations if it does not accurately describe an action or spatial relationship between the objects present in the video.
     
     In-context Example 1:
-        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
+        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -215,7 +314,7 @@ Also, describe how these interactions evolve as time progresses.
         #sg_end
 
     In-context Example 2:
-        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
+        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
 
         #sg_start
         {

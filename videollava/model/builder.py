@@ -24,7 +24,7 @@ from videollava.constants import DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOK
     DEFAULT_VIDEO_PATCH_TOKEN, DEFAULT_VID_START_TOKEN, DEFAULT_VID_END_TOKEN
 
 
-def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, load_4bit=False, device_map="auto", device="cuda", **kwargs):
+def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, load_4bit=False, device_map="auto", device="cuda", use_custom_tokenizer=False, **kwargs):
     kwargs = {"device_map": device_map, **kwargs}
 
     if device != "cuda":
@@ -49,8 +49,12 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
             warnings.warn('There is `lora` in model name but no `model_base` is provided. If you are loading a LoRA model, please provide the `model_base` argument. Detailed instruction: https://github.com/haotian-liu/LLaVA#launch-a-model-worker-lora-weights-unmerged.')
         if 'lora' in model_name.lower() and model_base is not None:
             lora_cfg_pretrained = AutoConfig.from_pretrained(model_path)
-            # tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-            tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False) # JAIMIN CHNAGES
+            # print(lora_cfg_pretrained)
+            if use_custom_tokenizer:
+                print("#########using Custom tokenizer #####")
+                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False) # JAIMIN CHANGES
+            else:
+                tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
             print('Loading LLaVA from base model...')
             model = LlavaLlamaForCausalLM.from_pretrained(model_base, low_cpu_mem_usage=True, config=lora_cfg_pretrained, **kwargs)
             token_num, tokem_dim = model.lm_head.out_features, model.lm_head.in_features
@@ -77,6 +81,10 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
             model.load_state_dict(non_lora_trainables, strict=False)
 
             from peft import PeftModel
+            # from peft import LoraConfig
+            # target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj", "down_proj","lm_head",]
+            # peft_config = LoraConfig(inference_mode=False, r=128, lora_alpha=128, target_modules=target_modules) # JAIMIN Changes
+            # model = PeftModel.from_pretrained(model, model_path,config=peft_config)
             print('Loading LoRA weights...')
             model = PeftModel.from_pretrained(model, model_path)
             print('Merging LoRA weights...')

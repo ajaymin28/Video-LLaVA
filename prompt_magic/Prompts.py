@@ -6,6 +6,10 @@ importlib.reload(InContextExamples)
 importlib.reload(objectspredicates)
 
 
+V10_TaskDescription_ = TaskDescription.Task_description_v10
+v10_prompt = V10_TaskDescription_ + """
+"""
+
 V9_TaskDescription_ = TaskDescription.Task_description_v9
 v9_prompt = f"""{V9_TaskDescription_}
 Note: There are 8 frames in the video.

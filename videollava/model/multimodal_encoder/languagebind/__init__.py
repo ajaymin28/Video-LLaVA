@@ -199,6 +199,7 @@ class LanguageBindVideoTower(nn.Module):
         # model = LanguageBindImage.from_pretrained('LanguageBind/LanguageBind_Image', cache_dir=self.cache_dir)
         self.video_tower = model.vision_model
         self.video_tower.requires_grad_(False)
+        # self.langbind_vid_model = model
 
 
         self.is_loaded = True

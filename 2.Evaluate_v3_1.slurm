@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=h100
 #SBATCH --gres-flags=enforce-binding
-#SBATCH --job-name=t04_v5_3_customchange_e03_video_llava_vidvrd_annotations_temp04
+#SBATCH --job-name=v7_e03_video_llava_vidvrd_annotations_t00
 #SBATCH --time=2-24:00:00
 #SBATCH --output=/lustre/fs1/home/jbhol/dso/jobs/%x_raw_%j.out
 #SBATCH --mail-type=BEGIN,END,FAIL
@@ -40,4 +40,26 @@ module load gcc/gcc-11.2.0
 ##CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v5_2_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03_2_t00 --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]video_llava_vidvrd_annotations_v5_2_withsysmsg_varying_list_customchange_e03/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.0
 
 # v5_2 P09_E03 Temprature 0.4
-CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v5_2_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03_2_t04 --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]video_llava_vidvrd_annotations_v5_2_withsysmsg_varying_list_customchange_e03/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.4
+###CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v5_2_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03_2_t04 --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]video_llava_vidvrd_annotations_v5_2_withsysmsg_varying_list_customchange_e03/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.4
+
+
+# v6 P01_E03 Temprature 0.2
+###CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v5_2_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v6_e03_2 --model-path="/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v6_e03_2/videollava-7b-lora" --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.2
+
+# v6 P01_E03 Temprature 0.2 fast method 
+###CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v6_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v6_e03_fast --model-path="/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v6_e03_2/videollava-7b-lora" --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.2
+
+
+# v5_3 P09_E03 Temprature 0.0
+###CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v6_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v5_3_e03_2_t00_fast --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]video_llava_vidvrd_annotations_v5_2_withsysmsg_varying_list_customchange_e03/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.0
+
+
+
+# v7 Temprature 0.0
+CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v7_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v7_e03_t00_unisample --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v7_e03/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.0
+
+
+# v7_time Temprature 0.0
+####CUDA_VISIBLE_DEVICES=0 python "/home/jbhol/dso/gits/Video-LLaVA/evaluate_vidvrd_v7_withtime_varyingprompts.py" --output_dir=[test][lora]alpha256_video_llava_vidvrd_annotations_v7_time_e03_t00_unisample --model-path=/home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]alpha256_video_llava_vidvrd_annotations_v7_withtime_e03/videollava-7b-lora --model-base lmsys/vicuna-7b-v1.5 --file="" --temperature=0.0
+
+
