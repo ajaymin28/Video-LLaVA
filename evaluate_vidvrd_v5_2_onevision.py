@@ -611,7 +611,7 @@ if __name__=="__main__":
             Block_GT_Triplets = overall_annot["triplets"]
             Block_frame_ids = overall_annot["frame_idxes"]
 
-            current_block_triplet_data = copy.deepcopy(overall_annot["current_block_triplet_data"])
+            # current_block_triplet_data = copy.deepcopy(overall_annot["current_block_triplet_data"])
             # final_subjects_list = get_varying_list(current_block_list=current_block_triplet_data["subjects"], 
             #                                 full_list=GtData["subject"], 
             #                                 fix_size=10) 
@@ -620,9 +620,9 @@ if __name__=="__main__":
             #                                 full_list=GtData["object"], 
             #                                 fix_size=10)
 
-            final_predicates_list = get_varying_list(current_block_list=current_block_triplet_data["predicates"], 
-                                            full_list=GtData["predicate"], 
-                                            fix_size=30) # total 132 predicates in vidvrd
+            # final_predicates_list = get_varying_list(current_block_list=current_block_triplet_data["predicates"], 
+            #                                 full_list=GtData["predicate"], 
+            #                                 fix_size=30) # total 132 predicates in vidvrd
             # TripletQ = getRandomPrompt(key='triplet_prompt', static=False)
             # TripletQ = TripletQ.replace("{subjects}", ",".join(final_subjects_list))
             # TripletQ = TripletQ.replace("{objects}", ",".join(final_objects_list))
@@ -630,7 +630,7 @@ if __name__=="__main__":
 
             defaultPrompt_withList = copy.deepcopy(defaultPrompt)
             # defaultPrompt_withList = defaultPrompt_withList.replace("{List_of_objects}", ",".join(list(set(final_subjects_list+final_objects_list))))
-            defaultPrompt_withList = defaultPrompt_withList.replace("{List_of_predicates}", ",".join(final_predicates_list))
+            # defaultPrompt_withList = defaultPrompt_withList.replace("{List_of_predicates}", ",".join(final_predicates_list))
 
 
             if val_id not in llava_response_json:
