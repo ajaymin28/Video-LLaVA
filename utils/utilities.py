@@ -561,7 +561,11 @@ def validate_model_response(model_response):
 #     return frame_triplets
 
 def pre_clean_prediction_data_onevision_v6(model_response, fileData=None):
-    frame_triplets = []
+    frame_triplets = {
+        "triplets": [],
+        "scene": [],
+        "st_progression": []
+    }
     prediction_data = model_response
     prediction_data = prediction_data.strip("</s>").lower()
 
@@ -576,17 +580,20 @@ def pre_clean_prediction_data_onevision_v6(model_response, fileData=None):
             evaluated_string_json = eval(cleanString)
 
             for key,frame_data in evaluated_string_json.items():
-                if key=="scene" or key=="st progression":
-                    continue
-                # strkey = str(key)
-                # strkey_f_index = strkey.strip("F")  # F1 ==> 1
-                current_frame_triplets = []
-                for frame_triplet in frame_data["triplets"]:
-                    if len(frame_triplet)==3:
-                        current_frame_triplets.append(frame_triplet)
-                    else:
-                        print("invalid length for triplet",frame_triplet)
-                frame_triplets.append(current_frame_triplets)
+                if key=="scene":
+                    frame_triplets["scene"].append(frame_data)
+                elif key=="st progression":
+                    frame_triplets["st_progression"].append(frame_data)
+                else:
+                    # strkey = str(key)
+                    # strkey_f_index = strkey.strip("F")  # F1 ==> 1
+                    current_frame_triplets = []
+                    for frame_triplet in frame_data["triplets"]:
+                        if len(frame_triplet)==3:
+                            current_frame_triplets.append(frame_triplet)
+                        else:
+                            print("invalid length for triplet",frame_triplet)
+                    frame_triplets.append(current_frame_triplets)
 
         except Exception as e:
             print(e, fileData)
