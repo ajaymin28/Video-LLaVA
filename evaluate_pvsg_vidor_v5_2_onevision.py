@@ -393,15 +393,15 @@ if __name__=="__main__":
     }
 
     GtData = {
-        "subject": [],
-        "object": [],
-        "predicate": []
+        "subjects": [],
+        "objects": [],
+        "predicates": []
     }
 
     PredData = {
-        "subject": [],
-        "predicate": [],
-        "object": []
+        "subjects": [],
+        "predicates": [],
+        "objects": []
     }
 
     exec(open("/home/jbhol/dso/gits/Video-LLaVA/picklePrompt.py").read())
@@ -457,8 +457,45 @@ if __name__=="__main__":
         "triplet": {"precision": [], "recall": []} 
     }
 
+    # use train_ids + val_ids to get GT data preciates/objects
     vidor_data = {data_dict['video_id']: data_dict for data_dict in anno['data'] if data_dict['video_id'] in vidor_ids}
     for id_idx, video_id in enumerate(vidor_ids):
+        video_data = vidor_data[video_id]
+
+        total_frames = video_data["meta"]["num_frames"]
+        vid_rels = video_data["relations"]
+
+        vid_objects_by_id = {data_dict['object_id']: data_dict for data_dict in video_data["objects"]} 
+
+
+        frames_dict = get_frame_by_frame_annot(frame_count=total_frames,
+                                               rels=vid_rels,
+                                               sub_ob_jects_by_id=vid_objects_by_id)
+    
+        for frame_idx, frame_data in frames_dict.items():
+            if len(frame_data["triplets"])==0:
+                continue
+
+            added_triplets = []
+            current_frame_triplets = []
+
+            for index_to_draw, triplet in enumerate(frame_data["triplets"]):
+                if len(triplet)!=3:
+                    continue
+                subj,predicate,obj = triplet
+                subj, subj_id = subj.split("-")
+                obj, obj_id = obj.split("-")
+                if subj not in GtData["subjects"]:
+                    GtData["subjects"].append(subj)
+                if obj not in GtData["objects"]:
+                    GtData["objects"].append(obj)
+                if predicate not in GtData["predicates"]:
+                    GtData["predicates"].append(predicate)
+
+    
+    # use only val ids for evaluation
+    vidor_data = {data_dict['video_id']: data_dict for data_dict in anno['data'] if data_dict['video_id'] in val_ids}
+    for id_idx, video_id in enumerate(val_ids):
         video_data = vidor_data[video_id]
 
         total_frames = video_data["meta"]["num_frames"]
@@ -483,6 +520,7 @@ if __name__=="__main__":
         
         # tripletes_for_current_block = ""
         for frame_idx, frame_data in frames_dict.items():
+            # use only annotated frames
             if len(frame_data["triplets"])==0:
                 continue
 
@@ -627,15 +665,15 @@ if __name__=="__main__":
                     pred_all["predicate"].append({"triplet": fpred_p, "score": 1.0})
                     pred_all["object"].append({"triplet": fpred_o, "score": 1.0})
 
-                    if fpred_s not in GtData["subject"]:
-                        if fpred_s not in PredData["subject"]:
-                            PredData["subject"].append(fpred_s)
-                    if fpred_p not in GtData["predicate"]:
-                        if fpred_p not in PredData["predicate"]:
-                            PredData["predicate"].append(fpred_p)
-                    if fpred_o not in GtData["object"]:
-                        if fpred_o not in PredData["object"]:
-                            PredData["object"].append(fpred_o)
+                    if fpred_s not in GtData["subjects"]:
+                        if fpred_s not in PredData["subjects"]:
+                            PredData["subjects"].append(fpred_s)
+                    if fpred_p not in GtData["predicates"]:
+                        if fpred_p not in PredData["predicates"]:
+                            PredData["predicates"].append(fpred_p)
+                    if fpred_o not in GtData["objects"]:
+                        if fpred_o not in PredData["objects"]:
+                            PredData["objects"].append(fpred_o)
 
                 for fm_key, fmdata in frame_metric.items():
                     prec, rec, hit_scores = eval_tagging_scores(gt_relations=gt_all[fm_key],pred_relations=pred_all[fm_key],min_pred_num=1)
