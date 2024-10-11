@@ -380,6 +380,20 @@ def parse_args():
     parser.add_argument("--max-new-tokens", type=int, default=4000)
     return parser.parse_args()
 
+def get_frame_samples(total_frames,every_nth=4,frame_window_size=32,shift_step=3, total_shifts=100):
+	frames_selected = []
+	assert shift_step!=every_nth
+	for i in range(0,total_shifts,shift_step):
+		frames =[]
+		for j in range(i, i+frame_window_size,every_nth):
+			if j>total_frames:
+				break
+			frames.append(j)
+		if len(frames)>=int(frame_window_size/every_nth):
+			frames.sort()
+			frames_selected.append(frames)
+	return frames_selected
+
 if __name__=="__main__":
     args = parse_args()
     print(args)
@@ -465,8 +479,8 @@ if __name__=="__main__":
     }
 
     # use train_ids + val_ids to get GT data preciates/objects
-    vidor_data = {data_dict['video_id']: data_dict for data_dict in anno['data'] if data_dict['video_id'] in val_ids}
-    for id_idx, video_id in enumerate(val_ids):
+    vidor_data = {data_dict['video_id']: data_dict for data_dict in anno['data'] if data_dict['video_id'] in vidor_ids}
+    for id_idx, video_id in enumerate(vidor_ids):
         
         video_data = vidor_data[video_id]
 
@@ -536,65 +550,7 @@ if __name__=="__main__":
         }
 
 
-        
-        # tripletes_for_current_block = ""
-        for frame_idx, frame_data in frames_dict.items():
-            # use only annotated frames
-            if len(frame_data["triplets"])==0:
-                continue
-
-            added_triplets = []
-            current_frame_triplets = []
-
-            for index_to_draw, triplet in enumerate(frame_data["triplets"]):				
-                subj = triplet[0]
-                predicate = triplet[1]
-                # if "_" in predicate:
-                #     predicate = predicate.replace("_", " ")
-                obj = triplet[2]
-                
-                subj, subj_id = subj.split("-")
-                obj, obj_id = obj.split("-")
-                
-                construct_triplet = f"[{subj}-{subj_id}"
-                construct_triplet += f":{obj}-{obj_id}"
-                construct_triplet += f":{predicate}"
-                construct_triplet += f"];"
-
-                if subj not in current_block_triplet_data["subjects"]:
-                    current_block_triplet_data["subjects"].append(subj)
-                
-                if obj not in current_block_triplet_data["objects"]:
-                    current_block_triplet_data["objects"].append(obj)
-
-                if predicate not in current_block_triplet_data["predicates"]:
-                    current_block_triplet_data["predicates"].append(predicate)
-
-                if construct_triplet not in added_triplets:
-                        # tripletes_for_current_block += construct_triplet
-                        added_triplets.append(construct_triplet)
-                        current_frame_triplets.append([f"{subj}-{subj_id}",f"{predicate}", f"{obj}-{obj_id}"])
-
-            
-            if len(current_frame_triplets)>0:
-                frame_indices.append(frame_idx)
-                current_block_triplets.append(current_frame_triplets)
-                if len(frame_indices)>=8:
-                    overall_annotations.append({
-                        "frame_idxes": frame_indices,
-                        # "frames_sgs": tripletes_for_current_block+f"{SGSpecialTokens.SG_END}",
-                        "triplets_list": current_block_triplets,
-                        "current_block_triplet_data" : copy.deepcopy(current_block_triplet_data)
-                    })
-
-                    tripletes_for_current_block = ""
-                    frame_indices = []
-                    current_block_triplets = []
-                    current_block_triplet_data = {
-                        "subjects": [],
-                        "objects": [],
-                        "predicates": []
-                    }
+        frameblocks = get_frame_samples(total_frames=total_frames,shift_step=5) # uniform sampling
 
 
         block_metric = {
@@ -603,10 +559,77 @@ if __name__=="__main__":
             "predicate": {"precision": [], "recall": []},
             "triplet": {"precision": [], "recall": []}
         }
+        for frame_block_index,selected_frames in enumerate(frameblocks):
+            selected_frames.sort()
+
+            for blk_frame_idx, frame_idx in enumerate(selected_frames):
+                if frame_idx not in frames_dict.keys():
+                     continue
+                
+                if frame_idx>total_frames:
+                    continue
+
+                frame_data = frames_dict[frame_idx]
+
+                if len(frame_data["triplets"])==0:
+                    continue
+    
+                added_triplets = []
+                current_frame_triplets = []
+
+                for index_to_draw, triplet in enumerate(frame_data["triplets"]):				
+                    subj = triplet[0]
+                    predicate = triplet[1]
+                    # if "_" in predicate:
+                    #     predicate = predicate.replace("_", " ")
+                    obj = triplet[2]
+                    
+                    subj, subj_id = subj.split("-")
+                    obj, obj_id = obj.split("-")
+                    
+                    construct_triplet = f"[{subj}-{subj_id}"
+                    construct_triplet += f":{obj}-{obj_id}"
+                    construct_triplet += f":{predicate}"
+                    construct_triplet += f"];"
+
+                    if subj not in current_block_triplet_data["subjects"]:
+                        current_block_triplet_data["subjects"].append(subj)
+                    
+                    if obj not in current_block_triplet_data["objects"]:
+                        current_block_triplet_data["objects"].append(obj)
+
+                    if predicate not in current_block_triplet_data["predicates"]:
+                        current_block_triplet_data["predicates"].append(predicate)
+
+                    if construct_triplet not in added_triplets:
+                            # tripletes_for_current_block += construct_triplet
+                            added_triplets.append(construct_triplet)
+                            current_frame_triplets.append([f"{subj}-{subj_id}",f"{predicate}", f"{obj}-{obj_id}"])
+
+                
+                if len(current_frame_triplets)>0:
+                    frame_indices.append(frame_idx)
+                    current_block_triplets.append(current_frame_triplets)
+                    if len(frame_indices)>=8:
+                        overall_annotations.append({
+                            "frame_idxes": frame_indices,
+                            # "frames_sgs": tripletes_for_current_block+f"{SGSpecialTokens.SG_END}",
+                            "triplets_list": current_block_triplets,
+                            "current_block_triplet_data" : copy.deepcopy(current_block_triplet_data)
+                        })
+
+                        tripletes_for_current_block = ""
+                        frame_indices = []
+                        current_block_triplets = []
+                        current_block_triplet_data = {
+                            "subjects": [],
+                            "objects": [],
+                            "predicates": []
+                        }
+
+
         last_processed_time = None
         for frame_block_index, overall_annot in enumerate(overall_annotations):
-            if frame_block_index%2==0:
-                continue
 
             if last_processed_time is None:
                 last_processed_time = time.perf_counter()

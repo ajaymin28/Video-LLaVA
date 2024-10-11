@@ -1,4 +1,3 @@
-
 List_of_objects = []
 List_of_predicates = [] 
 
@@ -17,112 +16,118 @@ List_of_predicates = []
 # 
 # 
 
-opvsg_predicates_numbered = """0.beside 1.biting 2.blowing 3.brushing 4.caressing 5.carrying 6.catching 7.chasing 8.cleaning 9.closing 10.cooking 11.cutting 12.drinking from 13.eating 14.entering 15.feeding 16.grabbing 17.guiding 18.hanging from 19.hitting 20.holding 21.hugging 22.in 23.in front of 24.jumping from 25.jumping over 26.kicking 27.kissing 28.licking 29.lighting 30.looking at 31.lying on 32.next to 33.on 34.opening 35.over 36.picking 37.playing 38.playing with 39.pointing to 40.pulling 41.pushing 42.riding 43.running on 44.shaking hand with 45.sitting on 46.standing on 47.stepping on 48.stirring 49.swinging 50.talking to 51.throwing 52.touching 53.toward 54.walking on 55.watering 56.wearing"""
-objects_numbered_pvsg = """0.adult 1.baby 2.bag 3.ball 4.ballon 5.basket 6.bat 7.bed 8.bench 9.beverage 10.bike 11.bird 12.blanket 13.board 14.book 15.bottle 16.bowl 17.box 18.bread 19.brush 20.bucket 21.cabinet 22.cake 23.camera 24.can 25.candle 26.car 27.card 28.carpet 29.cart 30.cat 31.cellphone 32.chair 33.child 34.chopstick 35.cloth 36.computer 37.condiment 38.cookie 39.countertop 40.cover 41.cup 42.curtain 43.dog 44.door 45.drawer 46.dustbin 47.egg 48.fan 49.faucet 50.fence 51.flower 52.fork 53.fridge 54.fruit 55.gift 56.glass 57.glasses 58.glove 59.grain 60.guitar 61.hat 62.helmet 63.horse 64.iron 65.knife 66.light 67.lighter 68.mat 69.meat 70.microphone 71.microwave 72.mop 73.net 74.noodle 75.others 76.oven 77.pan 78.paper 79.piano 80.pillow 81.pizza 82.plant 83.plate 84.pot 85.powder 86.rack 87.racket 88.rag 89.ring 90.scissor 91.shelf 92.shoe 93.simmering 94.sink 95.slide 96.sofa 97.spatula 98.sponge 99.spoon 100.spray 101.stairs 102.stand 103.stove 104.switch 105.table 106.teapot 107.towel 108.toy 109.tray 110.tv 111.vaccum 112.vegetable 113.washer 114.window 115.ceiling 116.floor 117.grass 118.ground 119.rock 120.sand 121.sky 122.snow 123.tree 124.wall 125.water"""
-Task_description_v10_pvsg = f"""The predefined objects_entity lexicon containing 125 lexemes is numbered as follows: {objects_numbered_pvsg} \n\
-    and predefined relations_entity lexicon containing 56 lexemes is numbered as follows: {opvsg_predicates_numbered} \n\
-    
-    Given the objects and relations lexeme, the task is to generate triplets from the video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon] using the predefined entity lexicon. 
+opvsg_predicates_numbered = """1.beside 2.biting 3.blowing 4.brushing 5.caressing 6.carrying 7.catching 8.chasing 9.cleaning 10.closing 11.cooking 12.cutting 13.drinking from 14.eating 15.entering 16.feeding 17.grabbing 18.guiding 19.hanging from 20.hitting 21.holding 22.hugging 23.in 24.in front of 25.jumping from 26.jumping over 27.kicking 28.kissing 29.licking 30.lighting 31.looking at 32.lying on 33.next to 34.on 35.opening 36.over 37.picking 38.playing 39.playing with 40.pointing to 41.pulling 42.pushing 43.riding 44.running on 45.shaking hand with 46.sitting on 47.standing on 48.stepping on 49.stirring 50.swinging 51.talking to 52.throwing 53.touching 54.toward 55.walking on 56.watering 57.wearing"""
+objects_numbered_pvsg = """1.adult 2.baby 3.bag 4.ball 5.ballon 6.basket 7.bat 8.bed 9.bench 10.beverage 11.bike 12.bird 13.blanket 14.board 15.book 16.bottle 17.bowl 18.box 19.bread 20.brush 21.bucket 22.cabinet 23.cake 24.camera 25.can 26.candle 27.car 28.card 29.carpet 30.cart 31.cat 32.cellphone 33.chair 34.child 35.chopstick 36.cloth 37.computer 38.condiment 39.cookie 40.countertop 41.cover 42.cup 43.curtain 44.dog 45.door 46.drawer 47.dustbin 48.egg 49.fan 50.faucet 51.fence 52.flower 53.fork 54.fridge 55.fruit 56.gift 57.glass 58.glasses 59.glove 60.grain 61.guitar 62.hat 63.helmet 64.horse 65.iron 66.knife 67.light 68.lighter 69.mat 70.meat 71.microphone 72.microwave 73.mop 74.net 75.noodle 76.others 77.oven 78.pan 79.paper 80.piano 81.pillow 82.pizza 83.plant 84.plate 85.pot 86.powder 87.rack 88.racket 89.rag 90.ring 91.scissor 92.shelf 93.shoe 94.simmering 95.sink 96.slide 97.sofa 98.spatula 99.sponge 100.spoon 101.spray 102.stairs 103.stand 104.stove 105.switch 106.table 107.teapot 108.towel 109.toy 110.tray 111.tv 112.vaccum 113.vegetable 114.washer 115.window 116.ceiling 117.floor 118.grass 119.ground 120.rock 121.sand 122.sky 123.snow 124.tree 125.wall 126.water"""
+Task_description_v10_pvsg = f"""The predefined objects_entity lexicon containing 126 lexemes is numbered as follows: """ + objects_numbered_pvsg + """
+    and predefined relations_entity lexicon containing 57 lexemes is numbered as follows: """ +  opvsg_predicates_numbered + """
+
+    Given the objects and relations lexeme, the task is to describe the provided video in deatail and create triplets in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon] using the predefined entity lexicon. 
     The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
 
-    Note: It is possible that exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
-        example-1: The objects_entity "person" can be mapped to "0.adult".
-        example-2: The objects_entity "puppy" can be mapped to "43.dog".
-        example-3: the objects_entity 'rider' can be mapped to '2.person'.
-        example-4: The objects_entity "lawn" can be mapped to "117.grass".
+    Please note: It is possible that the exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
+        Example-1: The relations_entity 'snuggling' can be mapped to '21.hugging'.
+        Example-2: The objects_entity 'infant' can be mapped to '1.baby'.
+        Example-3: The relations_entity 'transporting' can be mapped to '5.carrying'.
+        Example-4: The relations_entity 'smacking' can be mapped to '19.hitting'.
+        Example-5: The objects_entity 'drinks' can be mapped to '9.beverage'.
+        Example-6: The objects_entity "television" can be mapped to "110.tv".
 
-    In-context Example 1:
+
+    In-context example 1:
+
         #sg_start
         {
             "scene": { 
-                "description" : "Two lions move through the savanna, with the larger lion leading and the smaller lion following behind. Their positions emphasize their spatial relationship and size difference.",
+                "description" : "A child and a dog play outside, with the child holding a ball while the dog jumps beside them on the grass.",
             },
-            "f1": {
-                "descriptions": ["The larger lion walks in front of the smaller lion.","The smaller lion stands behind the larger lion."],
-                "triplets": [["10.lion-0", "18.walk front", "10.lion-1"], ["10.lion-1", "13.stand behind", "10.lion-0"]]
+            "frame-1": {
+                "descriptions": ["The child holds the ball while the dog jumps beside them.", "The dog is next to the child on the grass."],
+                "triplets": [["33.child-7", "20.holding", "3.ball-2"], ["43.dog-3", "24.jumping from", "33.child-7"], ["43.dog-3", "0.beside", "33.child-7"]]
             },  
-            "f2": {
-                "descriptions": ["The larger lion continues walking ahead.","The smaller lion walks behind, keeping pace."],
-                "triplets": [["10.lion-0", "18.walk front", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            "frame-2": {
+                "descriptions": ["The child throws the ball to the dog.", "The dog catches the ball mid-air."],
+                "triplets": [["33.child-7", "51.throwing", "3.ball-2"], ["43.dog-3", "6.catching", "3.ball-2"]]
             },  
-            "f3": {
-                "descriptions": ["The larger lion is taller than the smaller lion.","The smaller lion walks behind, following closely."],
-                "triplets": [["10.lion-0", "3.taller", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            "frame-3": {
+                "descriptions": ["The child chases the dog.", "The dog runs away with the ball."],
+                "triplets": [["33.child-7", "7.chasing", "43.dog-3"], ["43.dog-3", "43.running on", "117.grass-5"]]
             },
-            "f4": {
-                "descriptions": ["The larger lion walks right while the smaller lion follows behind.","The size difference between the lions remains visible."],
-                "triplets": [["10.lion-0", "14.walk right", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            "frame-4": {
+                "descriptions": ["The child picks up a stick to throw it to the dog.", "The dog watches intently."],
+                "triplets": [["33.child-7", "36.picking", "118.ground-9"], ["43.dog-3", "30.looking at", "33.child-7"]]
             },
-            "f5": {
-                "descriptions": ["The larger lion walks toward the front, leading the way.","The smaller lion follows behind, staying close."],
-                "triplets": [["10.lion-0", "25.walk toward", "10.lion-1"], ["10.lion-1", "19.walk behind", "10.lion-0"]]
+            "frame-5": {
+                "descriptions": ["The dog jumps over the child.", "The child laughs, watching the dog."],
+                "triplets": [["43.dog-3", "25.jumping over", "33.child-7"], ["33.child-7", "30.looking at", "43.dog-3"]]
             },
-            "f6": {
-                "descriptions": ["The larger lion walks next to the smaller lion for a moment.","The lions maintain their positions."],
-                "triplets": [["10.lion-0", "15.walk next to", "10.lion-1"], ["10.lion-1", "10.next to", "10.lion-0"]]
+            "frame-6": {
+                "descriptions": ["The child and the dog sit on the grass together.", "They look at each other contentedly."],
+                "triplets": [["33.child-7", "45.sitting on", "117.grass-5"], ["43.dog-3", "45.sitting on", "117.grass-5"], ["33.child-7", "50.talking to", "43.dog-3"]]
             },
-            "f7": {
-                "descriptions": ["The larger lion walks past the smaller lion.","The smaller lion stands behind, watching."],
-                "triplets": [["10.lion-0", "17.walk past", "10.lion-1"], ["10.lion-1", "13.stand behind", "10.lion-0"]]
+            "frame-7": {
+                "descriptions": ["The child and dog lie down together on the grass.", "The dog lies beside the child."],
+                "triplets": [["33.child-7", "31.lying on", "117.grass-5"], ["43.dog-3", "31.lying on", "117.grass-5"], ["43.dog-3", "32.next to", "33.child-7"]]
             },
-            "f8": {
-                "descriptions": ["The lions stop moving, the larger one still in front of the smaller lion.","The smaller lion sits behind the larger one."],
-                "triplets": [["10.lion-0", "87.stop front", "10.lion-1"], ["10.lion-1", "8.sit behind", "10.lion-0"]]
+            "frame-8": {
+                "descriptions": ["The child and dog rest quietly, side by side.", "They both look up at the sky."],
+                "triplets": [["33.child-7", "0.beside", "43.dog-3"], ["43.dog-3", "30.looking at", "121.sky-4"], ["33.child-7", "30.looking at", "121.sky-4"]]
             },
-            "st progression": "The scene shows the movement and spatial relationship of the two lions in the savanna. The larger lion consistently leads in size and position, with the smaller lion following closely behind or beside, eventually stopping behind the larger lion."
+            "st progression": "The scene depicts a playful interaction between a child and a dog. The child initially holds a ball, and the dog eagerly jumps around. As they play, the child throws the ball, and the dog catches it. They continue playing and eventually rest together on the grass, enjoying each other's company."
         }
         #sg_end
 
-    In-context Example 2:
+    In-context example 2:
+
         #sg_start
         {
             "scene": { 
-                "description" : "Two bicycles and two people are interacting as they move through the scene, with the people riding and maneuvering the bicycles. The scene highlights their movements and spatial relationships.",
+                "description" : "An adult and a baby are in the kitchen, with the adult holding a bottle while feeding the baby who is sitting on a chair.",
             },
-            "f1": {
-                "descriptions": ["The first bicycle moves right of the second bicycle.","The first bicycle moves in front of the second bicycle."],
-                "triplets": [["5.bicycle-0", "57.move right", "5.bicycle-1"], ["5.bicycle-0", "45.move front", "5.bicycle-1"]]
+            "frame-1": {
+                "descriptions": ["The adult holds the bottle while feeding the baby.", "The baby is sitting on the chair in front of the adult."],
+                "triplets": [ ["0.adult-2", "20.holding", "15.bottle-4"], ["0.adult-2", "15.feeding", "1.baby-6"], ["1.baby-6", "45.sitting on", "32.chair"], ["1.baby-6", "23.in front of", "0.adult-2"]]
             },  
-            "f2": {
-                "descriptions": ["Both bicycles move together side by side.","The second bicycle follows the first."],
-                "triplets": [["5.bicycle-0", "61.move with", "5.bicycle-1"], ["5.bicycle-1", "61.move with", "5.bicycle-0"]]
+            "frame-2": {
+                "descriptions": ["The baby drinks from the bottle.", "The adult looks at the baby while feeding."],
+                "triplets": [["1.baby-6", "12.drinking from", "15.bottle-4"], ["0.adult-2", "30.looking at", "1.baby-6"]]
             },  
-            "f3": {
-                "descriptions": ["The second bicycle moves behind the first.","The second bicycle shifts to the left of the first."],
-                "triplets": [["5.bicycle-1", "19.move behind", "5.bicycle-0"], ["5.bicycle-1", "58.move left", "5.bicycle-0"]]
+            "frame-3": {
+                "descriptions": ["The baby holds onto the bottle while drinking.", "The adult supports the bottle in the baby's hands."],
+                "triplets": [["1.baby-6", "20.holding", "15.bottle-4"], ["0.adult-2", "53.toward", "1.baby-6"]]
             },
-            "f4": {
-                "descriptions": ["The first bicycle moves beneath the person.","The person sits above the first bicycle, riding it."],
-                "triplets": [["5.bicycle-0", "46.move beneath", "2.person-3"], ["2.person-3", "32.sit above", "5.bicycle-0"]]
+            "frame-4": {
+                "descriptions": ["The adult gently caresses the baby's head.", "The baby continues to drink from the bottle."],
+                "triplets": [["0.adult-2", "4.caressing", "1.baby-6"], ["1.baby-6", "12.drinking from", "15.bottle-4"]]
             },
-            "f5": {
-                "descriptions": ["The first bicycle moves right of another person.","The first bicycle moves in front of the other person."],
-                "triplets": [["5.bicycle-0", "57.move right", "2.person-5"], ["5.bicycle-0", "45.move front", "2.person-5"]]
+            "frame-5": {
+                "descriptions": ["The baby smiles up at the adult.", "The adult smiles back, holding the bottle."],
+                "triplets": [["1.baby-6", "30.looking at", "0.adult-2"], ["0.adult-2", "30.looking at", "1.baby-6"], ["0.adult-2", "20.holding", "15.bottle-4"]]
             },
-            "f6": {
-                "descriptions": ["The other person stands behind the first bicycle.","The other person stands left of the first bicycle."],
-                "triplets": [["2.person-5", "37.behind", "5.bicycle-0"], ["2.person-5", "44.left", "5.bicycle-0"]]
+            "frame-6": {
+                "descriptions": ["The adult places the baby on the ground.", "The baby crawls next to the adult."],
+                "triplets": [["0.adult-2", "47.stepping on", "116.floor-0"], ["1.baby-6", "31.lying on", "116.floor-0"], ["1.baby-6", "0.beside", "0.adult-2"]]
             },
-            "f7": {
-                "descriptions": ["The second bicycle moves behind the person.","The second bicycle moves left of the person."],
-                "triplets": [["5.bicycle-1", "19.move behind", "2.person-3"], ["5.bicycle-1", "58.move left", "2.person-3"]]
+            "frame-7": {
+                "descriptions": ["The adult picks up a toy for the baby.", "The baby watches, curious."],
+                "triplets": [["0.adult-2", "36.picking", "108.toy-9"], ["1.baby-6", "30.looking at", "0.adult-2"]]
             },
-            "f8": {
-                "descriptions": ["The person sits above the second bicycle and rides it.","The two people align with each other, moving through the scene."],
-                "triplets": [["2.person-5", "32.sit above", "5.bicycle-1"], ["2.person-5", "61.move with", "2.person-3"]]
+            "frame-8": {
+                "descriptions": ["The adult and baby play with the toy together.", "They are both sitting on the floor, laughing."],
+                "triplets": [["0.adult-2", "38.playing with", "108.toy-9"], ["1.baby-6", "38.playing with", "108.toy-9"], ["0.adult-2", "45.sitting on", "116.floor-0"], ["1.baby-6", "45.sitting on", "116.floor-0"]]
             },
-            "st progression": "The two bicycles and two people move through the scene, interacting closely. The bicycles are ridden by the people, with movements emphasizing spatial relationships such as moving left, right, in front, and behind."
+            "st progression": "The scene portrays a nurturing interaction between an adult and a baby. The adult holds a bottle and feeds the baby, while the baby engages by drinking and eventually holding the bottle. Afterward, they play together with a toy, sharing smiles and laughter."
         }
         #sg_end
-
-    Now, from the provided video generate the triplets. Answer: 
+    
+    
+    Now, from the provided video which has 8 frames generate the triplets, output format should be same as above In-context examples: 
 """
 
 
 predicates_numbered = """1.jump right 2.stand left 3.taller 4.jump past 5.jump behind 6.stand front 7.sit next to 8.sit behind 9.sit front 10.next to 11.front 12.stand next to 13.stand behind 14.walk right 15.walk next to 16.walk left 17.walk past 18.walk front 19.walk behind 20.faster 21.larger 22.stand with 23.stand right 24.walk with 25.walk toward 26.walk away 27.stop right 28.stop beneath 29.stand above 30.ride 31.run beneath 32.sit above 33.sit beneath 34.sit left 35.sit right 36.walk above 37.behind 38.watch 39.hold 40.feed 41.touch 42.right 43.left 44.follow 45.move front 46.move beneath 47.chase 48.run left 49.run right 50.lie next to 51.lie behind 52.play 53.move behind 54.jump beneath 55.fly with 56.fly past 57.move right 58.move left 59.swim front 60.swim left 61.move with 62.jump front 63.jump left 64.swim right 65.swim next to 66.jump next to 67.swim with 68.move past 69.bite 70.pull 71.jump toward 72.fight 73.run front 74.run behind 75.sit inside 76.drive 77.lie front 78.stop behind 79.lie left 80.stop left 81.lie right 82.creep behind 83.creep above 84.beneath 85.above 86.fall off 87.stop front 88.run away 89.run next to 90.away 91.jump away 92.fly next to 93.lie beneath 94.jump above 95.lie above 96.walk beneath 97.stand beneath 98.move toward 99.toward 100.past 101.move away 102.run past 103.fly behind 104.fly above 105.fly left 106.lie with 107.creep away 108.creep left 109.creep front 110.run with 111.run toward 112.creep right 113.creep past 114.fly front 115.fly right 116.fly away 117.fly toward 118.stop above 119.stand inside 120.kick 121.run above 122.swim beneath 123.jump with 124.lie inside 125.move above 126.move next to 127.creep next to 128.creep beneath 129.swim behind 130.stop next to 131.stop with 132.creep toward"""
 objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse 7.monkey 8.fox 9.elephant 10.lion 11.giant_panda 12.airplane 13.whale 14.watercraft 15.car 16.bird 17.cattle 18.rabbit 19.snake 20.frisbee 21.motorcycle 22.ball 23.domestic_cat 24.bear 25.red_panda 26.lizard 27.skateboard 28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
-Task_description_v10 = f"""The predefined objects_entity lexicon containing 35 lexemes is numbered as follows: {objects_numbered} \n\
-    and predefined relations_entity lexicon containing 132 lexemes is numbered as follows: {predicates_numbered} \n\
+Task_description_v10 = f"""The predefined objects_entity lexicon containing 35 lexemes is numbered as follows: """ + objects_numbered + """ \n\
+    and predefined relations_entity lexicon containing 132 lexemes is numbered as follows: """ + predicates_numbered + """ \n\
     
     Given the objects and relations lexeme, the task is to generate triplets from the video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon] using the predefined entity lexicon. 
     The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
