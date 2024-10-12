@@ -7,8 +7,9 @@ import re
 import threading
 import time
 import copy
-from utils.utilities import create_batch_frames
+# from utils.utilities import create_batch_frames
 import argparse
+import time
 
 
 prompts_list = {
@@ -550,26 +551,27 @@ def getObjectsRelations(vid_rels, vid_data, norm_frames=True, add_frames=True, u
 
     #batch_of_frames, remaining_frames, batch_rels = create_batch_frames(vid_data=vid_data,totalFrames=total_frames,frame_batch=8)
 
+    # time_start_ = time.perf_counter()
     min_frame_idx, max_frame_idx, frames_for_obj = get_frame_range_for_annotations(vid_objects, vid_data) # drop frames with no annotations
-    frames_where_subjobj_rel_is_present = {}
+    # time_end_ = time.perf_counter()
+    # print(f"Took {time_end_-time_start_} for get_frame_range_for_annotations()")
+    # frames_where_subjobj_rel_is_present = {}
 
-    for frame_idx in range(min_frame_idx, max_frame_idx+1):
-      if frame_idx>total_frames:
-         continue
-      
-      if frame_idx not in frames_where_subjobj_rel_is_present.keys():
-         frames_where_subjobj_rel_is_present[frame_idx] = {
+    frame_annotations = {}
+    for i in range(total_frames):
+       if i not in frame_annotations.keys():
+          frame_annotations[i] = {
             "subj_obj_rel": [],
             "subj_obj_bb": [],
             "annot_cnt": 0
-         }
-
-      for idx, vid_r in enumerate(vid_rels):
+          }
+    
+    for idx, vid_r in enumerate(vid_rels):
         sub = vid_r[0]
         obj = vid_r[1]
         rel = vid_r[2]
         frames = vid_r[3].copy()
-        frame_start, frame_end = frames[0][0], frames[0][1]
+
         for frame_range in frames:
           frame_start, frame_end = frame_range
           
@@ -578,16 +580,49 @@ def getObjectsRelations(vid_rels, vid_data, norm_frames=True, add_frames=True, u
           if frame_end>total_frames:
             continue
 
-          # if frame_start>=frame_idx and frame_idx<=frame_end: # FIXED CONDITION
-          if frame_idx>=frame_start and frame_idx<=frame_end:
-            sub_bb, obj_bb, mask_size = get_bb_subj_obj(data_root=data_root,vid_id=vid_id,frame_idx=frame_idx,subject_id=sub,object_id=obj)
+          for fi in range(frame_start,frame_end):
+            # sub_bb, obj_bb, mask_size = get_bb_subj_obj(data_root=data_root,vid_id=vid_id,frame_idx=fi,subject_id=sub,object_id=obj)
+            # if sum(sub_bb)>=0 and sum(obj_bb)>=0:
+            frame_annotations[fi]["subj_obj_rel"].append(vid_r)
+            # frame_annotations[fi]["subj_obj_bb"].append([sub_bb, obj_bb])
+            frame_annotations[fi]["annot_cnt"] +=1
 
-            if sum(sub_bb)>=0 and sum(obj_bb)>=0:
-              # selected_frame = frame_for_bb_idx
-              # break
-              frames_where_subjobj_rel_is_present[frame_idx]["subj_obj_rel"].append(vid_r)
-              frames_where_subjobj_rel_is_present[frame_idx]["subj_obj_bb"].append([sub_bb, obj_bb])
-              frames_where_subjobj_rel_is_present[frame_idx]["annot_cnt"] +=1
+
+
+    # for frame_idx in range(min_frame_idx, max_frame_idx+1):
+    #   if frame_idx>total_frames:
+    #      continue
+    #   if frame_idx not in frames_where_subjobj_rel_is_present.keys():
+    #      frames_where_subjobj_rel_is_present[frame_idx] = {
+    #         "subj_obj_rel": [],
+    #         "subj_obj_bb": [],
+    #         "annot_cnt": 0
+    #      }
+
+    #   for idx, vid_r in enumerate(vid_rels):
+    #     sub = vid_r[0]
+    #     obj = vid_r[1]
+    #     rel = vid_r[2]
+    #     frames = vid_r[3].copy()
+    #     frame_start, frame_end = frames[0][0], frames[0][1]
+    #     for frame_range in frames:
+    #       frame_start, frame_end = frame_range
+          
+    #       if frame_start>total_frames:
+    #         continue
+    #       if frame_end>total_frames:
+    #         continue
+
+    #       # if frame_start>=frame_idx and frame_idx<=frame_end: # FIXED CONDITION
+    #       if frame_idx>=frame_start and frame_idx<=frame_end:
+    #         sub_bb, obj_bb, mask_size = get_bb_subj_obj(data_root=data_root,vid_id=vid_id,frame_idx=frame_idx,subject_id=sub,object_id=obj)
+
+    #         if sum(sub_bb)>=0 and sum(obj_bb)>=0:
+    #           # selected_frame = frame_for_bb_idx
+    #           # break
+    #           frames_where_subjobj_rel_is_present[frame_idx]["subj_obj_rel"].append(vid_r)
+    #           frames_where_subjobj_rel_is_present[frame_idx]["subj_obj_bb"].append([sub_bb, obj_bb])
+    #           frames_where_subjobj_rel_is_present[frame_idx]["annot_cnt"] +=1
 
 
     # frames_with_subjobj_rel_cnt = [(frames_where_subjobj_rel_is_present[f_idx]["annot_cnt"], f_idx) for f_idx in frames_where_subjobj_rel_is_present]
@@ -601,20 +636,24 @@ def getObjectsRelations(vid_rels, vid_data, norm_frames=True, add_frames=True, u
     #    AnswerString_keyval[f"Frame {i}"] = ""
 
     frame_counter = 0
-    annotation_total_frame_count = len(frames_where_subjobj_rel_is_present.keys())
+    annotation_total_frame_count = len(frame_annotations.keys())
     remaining_frames_after_batching = annotation_total_frame_count%uniform_sampling_idx
     frames_needs_to_be_added = uniform_sampling_idx - remaining_frames_after_batching
     frame_indices = []
 
-    frame_idx_list= list(frames_where_subjobj_rel_is_present.keys())
+    frame_idx_list= list(frame_annotations.keys())
     f_start_idx_for_rem_frames = remaining_frames_after_batching+frames_needs_to_be_added
     append_for_remaining_frames = frame_idx_list[f_start_idx_for_rem_frames:]
 
     tripletes_for_current_block = ""
-    for kewy_frame_idx, frame_data in frames_where_subjobj_rel_is_present.items():
+    
+    
+    for kewy_frame_idx, frame_data in frame_annotations.items():
+      if frame_data["annot_cnt"]==0:
+        continue
        
       subj_obj_rel = frame_data["subj_obj_rel"]
-      subj_obj_bb = frame_data["subj_obj_bb"]
+      # subj_obj_bb = frame_data["subj_obj_bb"]
 
       tripletes_for_current_block += "#frameseg "
 
@@ -624,7 +663,7 @@ def getObjectsRelations(vid_rels, vid_data, norm_frames=True, add_frames=True, u
         obj = vid_r[1]
         rel = vid_r[2]
         # frames = vid_r[3].copy()
-        sub_bb, obj_bb = subj_obj_bb[idx]
+        # sub_bb, obj_bb = subj_obj_bb[idx]
         # sub_center = getbbcenter(sub_bb)
         # obj_center = getbbcenter(obj_bb)
 
@@ -654,7 +693,7 @@ def getObjectsRelations(vid_rels, vid_data, norm_frames=True, add_frames=True, u
 
     # TODO add remaining annotations for last block
 
-    return overall_annotations,AnswerString,AnswerString_with_bb, frame_indices, frames_where_subjobj_rel_is_present
+    return overall_annotations,AnswerString,AnswerString_with_bb, frame_indices, frame_annotations
 
 def getConvBlock(value,conv_type="human", media_type="<image>", add_media_token=False):
    assert conv_type=="human" or conv_type=="gpt"
@@ -691,6 +730,7 @@ def prepare_vid_sg_threaded(chunk_vid_data_keys,data, norm_bb=True, dataset="vid
       total_frames = data[vid_id]["meta"]["num_frames"]
       video_path = f"{data_root}{dataset}/videos/{vid_id}.mp4"
       if not os.path.exists(video_path):
+            print(f"Video not found: {video_path}")
             continue
       
       # vid_objects = vid_data["objects"] # {'object_id': 2, 'category': 'countertop', 'is_thing': True, 'status': []},
@@ -706,8 +746,10 @@ def prepare_vid_sg_threaded(chunk_vid_data_keys,data, norm_bb=True, dataset="vid
       # PromptAnswer["conversations"].append(convQ)
       # PromptAnswer["conversations"].append(convA)
 
+      start_t = time.perf_counter()
       overall_annotations, AnswerStringRels,AnswerString_with_bb, frame_indices_rel, frames_where_subjobj_rel_is_present = getObjectsRelations(vid_data["relations"], vid_data, uniform_sampling_idx=uniform_sampling_idx, add_frames=False)
-
+      end_t = time.perf_counter()
+      print(f"took {end_t-start_t} for getObjectsRelations()")
 
       for annot in overall_annotations:
 
@@ -734,15 +776,15 @@ def prepare_vid_sg_threaded(chunk_vid_data_keys,data, norm_bb=True, dataset="vid
         PromptAnswer["frame_indices"] =  frame_indices
         PromptAnswer["total_frames"] = total_frames
 
-        with lock:
-          if vid_id in train_ids:
-            PromptAnswer["id"] = annot_cnt["train"]
-            video_gpt_promptanswers.append(PromptAnswer)
-            annot_cnt["train"] +=1
-          else:
-            PromptAnswer["id"] = annot_cnt["val"]
-            video_gpt_promptanswers_val.append(PromptAnswer)
-            annot_cnt["val"] +=1
+        # with lock:
+        if vid_id in train_ids:
+          PromptAnswer["id"] = annot_cnt["train"]
+          video_gpt_promptanswers.append(PromptAnswer)
+          annot_cnt["train"] +=1
+        else:
+          PromptAnswer["id"] = annot_cnt["val"]
+          video_gpt_promptanswers_val.append(PromptAnswer)
+          annot_cnt["val"] +=1
 
 
       # # SG with grounding
@@ -1019,4 +1061,4 @@ if __name__=="__main__":
         json.dump(video_gpt_bb_promptanswers,f)
     with open(JSON_videochatgpt_bb_tune_validate, "w") as f:
         json.dump(video_gpt_bb_promptanswers_val,f)
-    print("Saved annotations", video_bb_annot_cnt)
+    print("Saved bb annotations", video_bb_annot_cnt)
