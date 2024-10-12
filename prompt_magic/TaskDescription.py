@@ -1,10 +1,13 @@
 List_of_objects = []
 List_of_predicates = [] 
 
+opvsg_predicates_numbered = """1.beside 2.biting 3.blowing 4.brushing 5.caressing 6.carrying 7.catching 8.chasing 9.cleaning 10.closing 11.cooking 12.cutting 13.drinking from 14.eating 15.entering 16.feeding 17.grabbing 18.guiding 19.hanging from 20.hitting 21.holding 22.hugging 23.in 24.in front of 25.jumping from 26.jumping over 27.kicking 28.kissing 29.licking 30.lighting 31.looking at 32.lying on 33.next to 34.on 35.opening 36.over 37.picking 38.playing 39.playing with 40.pointing to 41.pulling 42.pushing 43.riding 44.running on 45.shaking hand with 46.sitting on 47.standing on 48.stepping on 49.stirring 50.swinging 51.talking to 52.throwing 53.touching 54.toward 55.walking on 56.watering 57.wearing"""
+objects_numbered_pvsg = """1.adult 2.baby 3.bag 4.ball 5.ballon 6.basket 7.bat 8.bed 9.bench 10.beverage 11.bike 12.bird 13.blanket 14.board 15.book 16.bottle 17.bowl 18.box 19.bread 20.brush 21.bucket 22.cabinet 23.cake 24.camera 25.can 26.candle 27.car 28.card 29.carpet 30.cart 31.cat 32.cellphone 33.chair 34.child 35.chopstick 36.cloth 37.computer 38.condiment 39.cookie 40.countertop 41.cover 42.cup 43.curtain 44.dog 45.door 46.drawer 47.dustbin 48.egg 49.fan 50.faucet 51.fence 52.flower 53.fork 54.fridge 55.fruit 56.gift 57.glass 58.glasses 59.glove 60.grain 61.guitar 62.hat 63.helmet 64.horse 65.iron 66.knife 67.light 68.lighter 69.mat 70.meat 71.microphone 72.microwave 73.mop 74.net 75.noodle 76.others 77.oven 78.pan 79.paper 80.piano 81.pillow 82.pizza 83.plant 84.plate 85.pot 86.powder 87.rack 88.racket 89.rag 90.ring 91.scissor 92.shelf 93.shoe 94.simmering 95.sink 96.slide 97.sofa 98.spatula 99.sponge 100.spoon 101.spray 102.stairs 103.stand 104.stove 105.switch 106.table 107.teapot 108.towel 109.toy 110.tray 111.tv 112.vaccum 113.vegetable 114.washer 115.window 116.ceiling 117.floor 118.grass 119.ground 120.rock 121.sand 122.sky 123.snow 124.tree 125.wall 126.water"""
 # Example-1: [cat-1, chasing, mouse-2]
 #     - cat is a subject and #id 1 is assigned to cat(subject).
 #     - chasing is a predicate/action which cat-1 is performing
 #     - mouse-2 is an object and #id 2 is assigned mouse(object) which is affected by cat-1(subject) and chasing(predicate)
+
 # Example-2 [cat-4, standing next, cat-2]
 #     - cat-4 is a subject and #id 4 is assigned to cat(subject).
 #     - standing next is a sptial predicate which describes cat-4(subject) in the scene
@@ -15,9 +18,36 @@ List_of_predicates = []
 #
 # 
 # 
+Task_description_v10_pvsg_justcaptions = f"""
+    The task is to provide detailed description of and a short summary of the video. 
 
-opvsg_predicates_numbered = """1.beside 2.biting 3.blowing 4.brushing 5.caressing 6.carrying 7.catching 8.chasing 9.cleaning 10.closing 11.cooking 12.cutting 13.drinking from 14.eating 15.entering 16.feeding 17.grabbing 18.guiding 19.hanging from 20.hitting 21.holding 22.hugging 23.in 24.in front of 25.jumping from 26.jumping over 27.kicking 28.kissing 29.licking 30.lighting 31.looking at 32.lying on 33.next to 34.on 35.opening 36.over 37.picking 38.playing 39.playing with 40.pointing to 41.pulling 42.pushing 43.riding 44.running on 45.shaking hand with 46.sitting on 47.standing on 48.stepping on 49.stirring 50.swinging 51.talking to 52.throwing 53.touching 54.toward 55.walking on 56.watering 57.wearing"""
-objects_numbered_pvsg = """1.adult 2.baby 3.bag 4.ball 5.ballon 6.basket 7.bat 8.bed 9.bench 10.beverage 11.bike 12.bird 13.blanket 14.board 15.book 16.bottle 17.bowl 18.box 19.bread 20.brush 21.bucket 22.cabinet 23.cake 24.camera 25.can 26.candle 27.car 28.card 29.carpet 30.cart 31.cat 32.cellphone 33.chair 34.child 35.chopstick 36.cloth 37.computer 38.condiment 39.cookie 40.countertop 41.cover 42.cup 43.curtain 44.dog 45.door 46.drawer 47.dustbin 48.egg 49.fan 50.faucet 51.fence 52.flower 53.fork 54.fridge 55.fruit 56.gift 57.glass 58.glasses 59.glove 60.grain 61.guitar 62.hat 63.helmet 64.horse 65.iron 66.knife 67.light 68.lighter 69.mat 70.meat 71.microphone 72.microwave 73.mop 74.net 75.noodle 76.others 77.oven 78.pan 79.paper 80.piano 81.pillow 82.pizza 83.plant 84.plate 85.pot 86.powder 87.rack 88.racket 89.rag 90.ring 91.scissor 92.shelf 93.shoe 94.simmering 95.sink 96.slide 97.sofa 98.spatula 99.sponge 100.spoon 101.spray 102.stairs 103.stand 104.stove 105.switch 106.table 107.teapot 108.towel 109.toy 110.tray 111.tv 112.vaccum 113.vegetable 114.washer 115.window 116.ceiling 117.floor 118.grass 119.ground 120.rock 121.sand 122.sky 123.snow 124.tree 125.wall 126.water"""
+    if possible use the objects_entity lexicon containing 126 lexemes is numbered as follows: """ + objects_numbered_pvsg + """
+    and predefined relations_entity lexicon containing 57 lexemes is numbered as follows: """ + opvsg_predicates_numbered + """ for describing the video
+
+    In-context example 1:
+
+        #sg_start
+        {
+            "detailed_description": "A child is blowing a balloon in a sunny backyard. The balloon is bright red and inflates as the child continues to blow into it. Beside the child, a dog is playfully jumping and wagging its tail, seemingly excited about the balloon. The child releases the balloon, and it flies off, causing the dog to chase after it across the yard. After a while, the child and the dog lie on the grass, both happily watching the clouds." ,
+            "summary": "The video shows a child blowing a red balloon, with a dog eagerly playing beside them. As the balloon flies away, the dog chases it, and the scene ends with the child and dog lying on the grass, enjoying a peaceful moment together."
+        }
+        #sg_end
+
+    In-context example 2:
+        #sg_start
+        {
+            "detailed_description": "An adult is cooking on a stove in a cozy kitchen. They are stirring a pot with a wooden spoon, and the sound of simmering fills the room. In front of them on the countertop, a child is sitting on a stool, holding a spoon and eagerly watching the cooking process. The adult occasionally hands the child small pieces of vegetables to add to the pot, and the child drops them in with a big smile. Toward the end, the adult and child taste the soup together, both smiling and nodding in approval." ,
+            "summary": "This video captures an adult and a child cooking together. The adult stirs a pot on the stove while the child sits on a stool in front of them, helping by adding vegetables. The scene ends with them tasting the soup together, sharing smiles and a sense of accomplishment."
+        }
+        #sg_end
+    
+    Now, from the provided video provide detailed description of and a short summary,the output format should be same as above In-context examples: 
+"""
+
+
+
+
+
 Task_description_v10_pvsg = f"""The predefined objects_entity lexicon containing 126 lexemes is numbered as follows: """ + objects_numbered_pvsg + """
     and predefined relations_entity lexicon containing 57 lexemes is numbered as follows: """ +  opvsg_predicates_numbered + """
 

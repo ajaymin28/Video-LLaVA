@@ -669,8 +669,8 @@ if __name__=="__main__":
 
 
             try:
-                Block_GT_triplets_woids = remove_ids(Block_GT_Triplets,version="v2_1")
-                Block_predicated_triplets_woids = remove_ids(outputs,version="v2_1")
+                Block_GT_triplets_woids = remove_ids(Block_GT_Triplets,version="v2_1", remove_indexes=True)
+                Block_predicated_triplets_woids = remove_ids(outputs,version="v2_1", remove_indexes=True)
             except Exception as e:
                 pass
 

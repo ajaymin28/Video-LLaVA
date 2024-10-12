@@ -6,6 +6,9 @@ importlib.reload(InContextExamples)
 importlib.reload(objectspredicates)
 
 
+v10_prompt_pvsg_justcaptions = TaskDescription.Task_description_v10_pvsg_justcaptions + """
+"""
+
 v10_prompt_pvsg = TaskDescription.Task_description_v10_pvsg + """
 """
 

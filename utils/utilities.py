@@ -37,7 +37,12 @@ def remove_ids_V2(frames_tripletes, version="v2_1"):
 
     return frames_tripletes
 
-def remove_ids(frames_tripletes, version="v2_1"):
+def remove_idx(data):
+    if "." in data:
+        data = data.split(".")[-1]
+    return data
+
+def remove_ids(frames_tripletes, version="v2_1", remove_indexes=False):
     for f_idx, triplets in enumerate(frames_tripletes):
         for idx, trip in enumerate(triplets):
             if version=="v2_1":
@@ -48,10 +53,11 @@ def remove_ids(frames_tripletes, version="v2_1"):
             subj = subj.split("-")[0]
             obj = obj.split("-")[0]
 
-            # if version=="v2_1":
+            if remove_indexes:
+                subj = remove_idx(subj)
+                obj = remove_idx(obj)
+                rel = remove_idx(rel)
             frames_tripletes[f_idx][idx] =  [subj, rel, obj]
-            # elif version=="v3_1":
-            # frames_tripletes[f_idx][idx] =  [subj, obj, rel]
 
     return frames_tripletes
 
@@ -648,6 +654,42 @@ def pre_clean_prediction_data_v7_with_time(model_response):
         pass
     
     return frame_triplets, frame_triplets_time_windows
+
+
+
+def post_clean_pvsg_prediction_data_v17(model_response):
+    frame_triplets = []
+    prediction_data = model_response
+    prediction_data = prediction_data.strip("</s>")
+    framewiseTriplets = prediction_data.split(f"#frameseg")[1:]
+
+    # special_tokens = SGSpecialTokens.get_tokens()
+
+    for cnt_idx, ftriplets in enumerate(framewiseTriplets):
+        if cnt_idx>7:
+            break
+
+        # for spetok in special_tokens:
+        #     ftriplets = ftriplets.replace(f"{spetok}", "")
+
+        ftriplets = ftriplets.replace(f":", ",")
+        ftriplets = ftriplets.split(";")
+
+        current_frame_triplets = []
+
+        for ftr in ftriplets:
+            ftr_temp = ftr.split(",")
+            if len(ftr_temp)==3:
+                # print("conveting to list",ftr)
+                ftr_temp[0] = str(ftr_temp[0]).strip("[").strip("]")
+                ftr_temp[1] = str(ftr_temp[1]).strip("[").strip("]")
+                ftr_temp[2] = str(ftr_temp[2]).strip("[").strip("]")  
+                current_frame_triplets.append(ftr_temp)
+
+        frame_triplets.append(current_frame_triplets)
+    
+    return frame_triplets
+
 
 def pre_clean_prediction_data_v18(model_response):
     frame_triplets = []

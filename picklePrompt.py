@@ -18,7 +18,8 @@ Detect_Count_objects = {
 
 
 Prompts_ = {
-    "default": Prompts.v10_prompt_pvsg,
+    "default": Prompts.v10_prompt_pvsg_justcaptions,
+    "version_10_pvsg": Prompts.v10_prompt_pvsg,
     "version_10": Prompts.v10_prompt,
     "version_9": Prompts.v9_prompt,
     "version_8": Prompts.v8_prompt,
