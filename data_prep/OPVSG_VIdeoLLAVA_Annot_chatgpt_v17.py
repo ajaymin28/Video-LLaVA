@@ -940,8 +940,8 @@ if __name__=="__main__":
     print('Number of Stuff Classes:', len(anno['objects']['stuff']))
     print('Number of Relation Classes:', len(anno['relations']))
 
-    train_ids = anno["split"]['vidor']["train"]
-    val_ids = anno["split"]['vidor']["val"]
+    train_ids = anno["split"][args.dataset]["train"]
+    val_ids = anno["split"][args.dataset]["val"]
     vidor_ids = train_ids + val_ids
     data = {data_dict['video_id']: data_dict for data_dict in anno['data'] if data_dict['video_id'] in vidor_ids}
     keys = list(data.keys())

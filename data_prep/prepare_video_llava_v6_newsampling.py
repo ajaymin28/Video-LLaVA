@@ -3,6 +3,24 @@
 
 """
 Varying list for list of objects and predicates
+
+Annoatations are prepared based on annotation segments
+
+e.g 
+
+if triplet [dog, eating, food] is present in [frame-1,frame-30], [frame-70,frame-80]
+then we have 
+[dog, eating, food]_[frame-1, frame-8]
+[dog, eating, food]_[frame-9, frame-15] ...
+
+[dog, eating, food]_[frame-70, frame-78]
+
+for frame 79 and 80 which remains, random sampling is done between frame-70 and frame-80
+means add 79 and 80 frames first then random sample between frame-70 and frame-80 till we have 8 frames.
+
+refer get_annotation_segments() function and where it's called and following code after that function call
+
+
 """
 
 
@@ -373,6 +391,8 @@ def prepare_vid_sg_threaded(data_root,subset, annotations,norm_bb=True, dataset=
 		
 		chunkedList = []
 		if len(annotations_segments)>FRAMES_TO_SELECT:
+			# if segments are more than FRAMES_TO_SELECT then cunk the frames into FRAMES_TO_SELECT batches
+
 			chunkedListGen = chunk_list(annotations_segments,FRAMES_TO_SELECT)
 			for chlist in chunkedListGen:
 				chunkedList.append(chlist)
@@ -380,13 +400,10 @@ def prepare_vid_sg_threaded(data_root,subset, annotations,norm_bb=True, dataset=
 			for chlist_idx, chlist in enumerate(chunkedList):
 				if len(chlist)<FRAMES_TO_SELECT:
 					# take previous segment data
-					segments_to_take = FRAMES_TO_SELECT - len(chlist)
-
 					cur_list_idx = chlist_idx
 					prev_segment_data = chunkedList[cur_list_idx-1]
 					prev_segment_data_idx = -1
 					# print(f"{train_id} less than FRAMES_TO_SELECT segments {chlist}")
-
 					while len(chlist)<FRAMES_TO_SELECT:
 						chlist.insert(0, prev_segment_data[prev_segment_data_idx])
 						prev_segment_data_idx -=1
@@ -398,9 +415,8 @@ def prepare_vid_sg_threaded(data_root,subset, annotations,norm_bb=True, dataset=
 			# print(chunkedList)
 			pass
 		else:
-			chunkedList = [annotations_segments]
+			chunkedList = [annotations_segments] # here it means less than FRAMES_TO_SELECT frames are present in annotations_segments
 			# handle during frame selection
-			pass
 
 		
 		for chlist_idx, chlist in enumerate(chunkedList):

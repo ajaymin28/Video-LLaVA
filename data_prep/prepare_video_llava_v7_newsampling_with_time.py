@@ -3,6 +3,17 @@
 
 """
 Varying list for list of objects and predicates
+
+follows get_frame_samples() for sampling of frames
+
+[0,4,8,12,16,20,24,28] then shift by n=5
+[5,9,13,18,22,26,30,34] then again shift by n=5
+[10,14 .....]
+
+all frames are covered which contains annotations.
+
+New: Time Block is added at the end of the trilplet e.g. [dog,eating,food]_[Frame-0,Frame-20]
+
 """
 
 
@@ -12,6 +23,7 @@ import glob
 from tqdm import tqdm
 import random
 import re
+import argparse
 import threading
 import time
 import copy
@@ -657,11 +669,19 @@ def chunk_list(list_, chunk_n):
 
 if __name__=="__main__":	
 		
+		parser = argparse.ArgumentParser()
+		# Define the command-line arguments
+		parser.add_argument("--data_root", help="data root to pvsg repo", required=False)
+		parser.add_argument("--output_dir", help="Directory to save the model results.", required=True)
+		parser.add_argument("--dataset", help="vidvrd", required=True)
+
+		args= parser.parse_args()
+		
 		from vidvrd2dataset import VidVRD, VidOR
 		import os
 
 		splits = ["train","test"]
-		imagenet_vidvrd_root = "/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd"
+		imagenet_vidvrd_root = args.data_root
 		imagenet_vidvrd_video_path = os.path.join(imagenet_vidvrd_root, "videos")
 
 		dataset = VidVRD(imagenet_vidvrd_root, imagenet_vidvrd_video_path, splits)
@@ -673,7 +693,7 @@ if __name__=="__main__":
 		lock = threading.Lock()
 
 		data_root = '/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd'
-		test_data_dir = os.path.join(data_root, "test")
+		test_data_dir = os.path.join(imagenet_vidvrd_root, "test")
 		test_anno_files = glob.glob(f"{test_data_dir}/*.json") 
 
 		dataset_meta = {
@@ -702,7 +722,7 @@ if __name__=="__main__":
 						dataset_meta["objects"].append(sbobjs["category"])
 
 		
-		train_data_dir = os.path.join(data_root, "train")
+		train_data_dir = os.path.join(imagenet_vidvrd_root, "train")
 		train_anno_files = glob.glob(f"{train_data_dir}/*.json")
 
 		train_annotations = []
@@ -735,7 +755,7 @@ if __name__=="__main__":
 		dataset = "vidvrd"
 		version = "v7_withtime"
 
-		OUTPUT_JSON_DIR = f"/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/video_llava_{dataset}_annotations_{version}/"
+		OUTPUT_JSON_DIR = args.output_dir
 		# JSON_llava_image_tune_validate = f"{OUTPUT_JSON_DIR}/llava_image_tune_validate.json"
 		# JSON_llava_image_tune = f"{OUTPUT_JSON_DIR}/llava_image_tune_.json"
 		# JSON_llava_image_tune_validate_bb = f"{OUTPUT_JSON_DIR}/llava_image_tune_validate_bb.json"
@@ -825,7 +845,7 @@ if __name__=="__main__":
 				pbar.refresh()
 
 
-				prepare_vid_sg_threaded(data_root=data_root,
+				prepare_vid_sg_threaded(data_root=imagenet_vidvrd_root,
 							subset=subset,
 							annotations=anno_files,norm_bb=True,dataset=dataset,
 							uniform_sampling_idx=8,
