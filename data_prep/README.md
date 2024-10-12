@@ -48,7 +48,7 @@ python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_ll
 
 Note: value of shift_frames=5 can be changed and every_nth=4 can also be changed based on the requirements
 
-python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling.py --data_root=/home/jbhol/dso/gits/OpenPVSG/data/ --output_dir=out_dir --dataset=vidvrd --every_nth=4 --shift_frames=5
+python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling.py --data_root=/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/ --output_dir=/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/v7_wotime --dataset=vidvrd --every_nth=4 --shift_frames=5
 
 ```
 
@@ -62,5 +62,5 @@ With time blocks triplet_[Frame-start,Frame-end]
 
 Note: value of shift_frames=5 can be changed and every_nth=4 can also be changed based on the requirements
 
-python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling_with_time.py --data_root=/home/jbhol/dso/gits/OpenPVSG/data/ --output_dir=out_dir --dataset=vidvrd --every_nth=4 --shift_frames=5
+python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling_with_time.py --data_root=/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/ --output_dir=/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/llava_annotations/v7_with_time --dataset=vidvrd --every_nth=4 --shift_frames=5
 ```
