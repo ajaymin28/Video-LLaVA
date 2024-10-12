@@ -42,9 +42,11 @@ python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_ll
 
 ```
 
-[0,4,8,12,16,20,24,28] then shift by n=5
-[5,9,13,18,22,26,30,34] then again shift by n=5
+[0,4,8,12,16,20,24,28] take every_nth_sample=4 and then shift by n=5
+[5,9,13,18,22,26,30,34] take every_nth_sample=4 and then again shift by n=5
 [10,14 .....]
+
+Note: value of n=5 can be changed and every_nth_sample=4 can also be changed based on the requirements
 
 python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling.py
 
@@ -54,10 +56,11 @@ python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_ll
 ```
 With time blocks triplet_[Frame-start,Frame-end]
 
-[0,4,8,12,16,20,24,28] then shift by n=5
-[5,9,13,18,22,26,30,34] then again shift by n=5
+[0,4,8,12,16,20,24,28] take every_nth_sample=4 then shift by n=5
+[5,9,13,18,22,26,30,34] take every_nth_sample=4 then again shift by n=5
 [10,14 .....]
 
-python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling_with_time.py
+Note: value of n=5 can be changed and every_nth_sample=4 can also be changed based on the requirements
 
+python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v7_newsampling_with_time.py
 ```
