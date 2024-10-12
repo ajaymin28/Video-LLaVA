@@ -354,7 +354,12 @@ def get_frame_samples(total_frames,every_nth=4,frame_window_size=32,shift_step=3
 
 
 
-def prepare_vid_sg_threaded(data_root,subset, annotations,norm_bb=True, dataset="vidor", uniform_sampling_idx=8, dataset_meta=None):
+def prepare_vid_sg_threaded(data_root,subset, annotations,
+							norm_bb=True, dataset="vidor", 
+							uniform_sampling_idx=8, 
+							dataset_meta=None,
+							every_nth=4,
+							shift=5):
 
 	global video_gpt_promptanswers, video_gpt_promptanswers_val, annot_cnt, OUTPUT_JSON_DIR, annotation_files_counter_val
 	global video_gpt_bb_promptanswers, video_gpt_bb_promptanswers_val, video_bb_annot_cnt, annotation_files_counter
@@ -395,7 +400,7 @@ def prepare_vid_sg_threaded(data_root,subset, annotations,norm_bb=True, dataset=
 
 		annotations_segments, minmax_window = get_annotation_segments(rels=rels)
 
-		frameblocks = get_frame_samples(total_frames=frame_count,shift_step=5) # uniform sampling
+		frameblocks = get_frame_samples(total_frames=frame_count, every_nth=every_nth, shift_step=shift) # uniform sampling
 
 		overall_annotations = []
 		frame_indices = []	
@@ -666,6 +671,8 @@ if __name__=="__main__":
 		parser.add_argument("--data_root", help="data root to pvsg repo", required=False)
 		parser.add_argument("--output_dir", help="Directory to save the model results.", required=True)
 		parser.add_argument("--dataset", help="vidvrd", required=True)
+		parser.add_argument("--every_nth", help="every nth frame to take",default=4, required=False)
+		parser.add_argument("--shift_frames", help="shift frames, make sure its not same as every_nth.",default=5, required=False)
 
 		args= parser.parse_args()
 		
@@ -840,8 +847,10 @@ if __name__=="__main__":
 				prepare_vid_sg_threaded(data_root=imagenet_vidvrd_root,
 							subset=subset,
 							annotations=anno_files,norm_bb=True,dataset=dataset,
-							uniform_sampling_idx=8,
-							dataset_meta=dataset_meta)
+							# uniform_sampling_idx=8,
+							dataset_meta=dataset_meta,
+							every_nth=int(args.every_nth),
+							shift=int(args.shift_frames))
 				
 				# for ch_idx, chunk_vid_data in enumerate(chunked_list):
 				# 		T = threading.Thread(target=prepare_vid_sg_threaded, name=f"Thread{ch_idx+1}", args=(data_root,subset,chunk_vid_data,True,dataset,8,dataset_meta))
