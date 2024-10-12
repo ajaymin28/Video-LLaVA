@@ -417,7 +417,7 @@ def prepare_vid_sg_threaded(data_root,subset, annotations,
 			
 			selected_frames.sort()
 			# print("selected frames", selected_frames)
-			for frame_idx in selected_frames:
+			for frame_blk_idx, frame_idx in enumerate(selected_frames):
 				if frame_idx>frame_count:
 					continue
 

@@ -403,7 +403,7 @@ def prepare_vid_sg_threaded(data_root,subset, annotations,
 
 		annotations_segments, minmax_window = get_annotation_segments(rels=rels)
 
-		frameblocks = get_frame_samples(total_frames=frame_count,shift_step=5) # uniform sampling
+		frameblocks = get_frame_samples(total_frames=frame_count, every_nth=every_nth, shift_step=shift) # uniform sampling
 
 		overall_annotations = []
 		frame_indices = []	
