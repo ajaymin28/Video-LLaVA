@@ -20,6 +20,28 @@ python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/OPVSG_VIdeoLLAVA
 
 ```
 
+Annoatations are prepared based on annotation segments
+
+e.g 
+
+if triplet [dog, eating, food] is present in [frame-1,frame-30], [frame-70,frame-80]
+then we have 
+[dog, eating, food]_[frame-1, frame-8]
+[dog, eating, food]_[frame-9, frame-15] ...
+
+[dog, eating, food]_[frame-70, frame-78]
+
+for frame 79 and 80 which remains, random sampling is done between frame-70 and frame-80
+means add 79 and 80 frames first then random sample between frame-70 and frame-80 till we have 8 frames.
+
+
+python /home/jbhol/dso/gits/VideoLLAVAGit/Video-LLaVA/data_prep/prepare_video_llava_v6_newsampling.py
+
+```
+
+
+```
+
 [0,4,8,12,16,20,24,28] then shift by n=5
 [5,9,13,18,22,26,30,34] then again shift by n=5
 [10,14 .....]
