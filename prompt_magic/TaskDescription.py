@@ -1,70 +1,373 @@
+
 List_of_objects = []
 List_of_predicates = [] 
 
-opvsg_predicates_numbered = """1.beside 2.biting 3.blowing 4.brushing 5.caressing 6.carrying 7.catching 8.chasing 9.cleaning 10.closing 11.cooking 12.cutting 13.drinking from 14.eating 15.entering 16.feeding 17.grabbing 18.guiding 19.hanging from 20.hitting 21.holding 22.hugging 23.in 24.in front of 25.jumping from 26.jumping over 27.kicking 28.kissing 29.licking 30.lighting 31.looking at 32.lying on 33.next to 34.on 35.opening 36.over 37.picking 38.playing 39.playing with 40.pointing to 41.pulling 42.pushing 43.riding 44.running on 45.shaking hand with 46.sitting on 47.standing on 48.stepping on 49.stirring 50.swinging 51.talking to 52.throwing 53.touching 54.toward 55.walking on 56.watering 57.wearing"""
-objects_numbered_pvsg = """1.adult 2.baby 3.bag 4.ball 5.ballon 6.basket 7.bat 8.bed 9.bench 10.beverage 11.bike 12.bird 13.blanket 14.board 15.book 16.bottle 17.bowl 18.box 19.bread 20.brush 21.bucket 22.cabinet 23.cake 24.camera 25.can 26.candle 27.car 28.card 29.carpet 30.cart 31.cat 32.cellphone 33.chair 34.child 35.chopstick 36.cloth 37.computer 38.condiment 39.cookie 40.countertop 41.cover 42.cup 43.curtain 44.dog 45.door 46.drawer 47.dustbin 48.egg 49.fan 50.faucet 51.fence 52.flower 53.fork 54.fridge 55.fruit 56.gift 57.glass 58.glasses 59.glove 60.grain 61.guitar 62.hat 63.helmet 64.horse 65.iron 66.knife 67.light 68.lighter 69.mat 70.meat 71.microphone 72.microwave 73.mop 74.net 75.noodle 76.others 77.oven 78.pan 79.paper 80.piano 81.pillow 82.pizza 83.plant 84.plate 85.pot 86.powder 87.rack 88.racket 89.rag 90.ring 91.scissor 92.shelf 93.shoe 94.simmering 95.sink 96.slide 97.sofa 98.spatula 99.sponge 100.spoon 101.spray 102.stairs 103.stand 104.stove 105.switch 106.table 107.teapot 108.towel 109.toy 110.tray 111.tv 112.vaccum 113.vegetable 114.washer 115.window 116.ceiling 117.floor 118.grass 119.ground 120.rock 121.sand 122.sky 123.snow 124.tree 125.wall 126.water"""
-# Example-1: [cat-1, chasing, mouse-2]
-#     - cat is a subject and #id 1 is assigned to cat(subject).
-#     - chasing is a predicate/action which cat-1 is performing
-#     - mouse-2 is an object and #id 2 is assigned mouse(object) which is affected by cat-1(subject) and chasing(predicate)
+vidvrd_predicates_numbered = """1.jump right 2.stand left 3.taller 4.jump past 5.jump behind 6.stand front 7.sit next to 8.sit behind 9.sit front 10.next to 11.front 12.stand next to 13.stand behind 14.walk right 15.walk next to 16.walk left 17.walk past 18.walk front 19.walk behind 20.faster 21.larger 22.stand with 23.stand right 24.walk with 25.walk toward 26.walk away 27.stop right 28.stop beneath 29.stand above 30.ride 31.run beneath 32.sit above 33.sit beneath 34.sit left 35.sit right 36.walk above 37.behind 38.watch 39.hold 40.feed 41.touch 42.right 43.left 44.follow 45.move front 46.move beneath 47.chase 48.run left 49.run right 50.lie next to 51.lie behind 52.play 53.move behind 54.jump beneath 55.fly with 56.fly past 57.move right 58.move left 59.swim front 60.swim left 61.move with 62.jump front 63.jump left 64.swim right 65.swim next to 66.jump next to 67.swim with 68.move past 69.bite 70.pull 71.jump toward 72.fight 73.run front 74.run behind 75.sit inside 76.drive 77.lie front 78.stop behind 79.lie left 80.stop left 81.lie right 82.creep behind 83.creep above 84.beneath 85.above 86.fall off 87.stop front 88.run away 89.run next to 90.away 91.jump away 92.fly next to 93.lie beneath 94.jump above 95.lie above 96.walk beneath 97.stand beneath 98.move toward 99.toward 100.past 101.move away 102.run past 103.fly behind 104.fly above 105.fly left 106.lie with 107.creep away 108.creep left 109.creep front 110.run with 111.run toward 112.creep right 113.creep past 114.fly front 115.fly right 116.fly away 117.fly toward 118.stop above 119.stand inside 120.kick 121.run above 122.swim beneath 123.jump with 124.lie inside 125.move above 126.move next to 127.creep next to 128.creep beneath 129.swim behind 130.stop next to 131.stop with 132.creep toward"""
+vidvrd_objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse 7.monkey 8.fox 9.elephant 10.lion 11.giant_panda 12.airplane 13.whale 14.watercraft 15.car 16.bird 17.cattle 18.rabbit 19.snake 20.frisbee 21.motorcycle 22.ball 23.domestic_cat 24.bear 25.red_panda 26.lizard 27.skateboard 28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
 
-# Example-2 [cat-4, standing next, cat-2]
-#     - cat-4 is a subject and #id 4 is assigned to cat(subject).
-#     - standing next is a sptial predicate which describes cat-4(subject) in the scene
-#     - cat-2 is an object and #id 2 is assigned cat(object) which is affected by cat-4(subject) and standing next(predicate)
 
-# Task: Generate scene graph triplets from the given video in the format [subject-#id, predicate, object-#id].
 
-#
-# 
-# 
-Task_description_v10_pvsg_justcaptions = f"""
-    The task is to provide detailed description of and a short summary of the video. 
+# Task_video_description_v1 = f"""
+#     The video containing 8 frames is provided.
+#     The task is to provide frame by frame detailed description of the video which shows what is happening in the video in each frame.
 
-    if possible use the objects_entity lexicon containing 126 lexemes is numbered as follows: """ + objects_numbered_pvsg + """
-    and predefined relations_entity lexicon containing 57 lexemes is numbered as follows: """ + opvsg_predicates_numbered + """ for describing the video
+#     In-context example 1:
+#         #sg_start
+#         {
+#             "frame-1": "A child stands in the garden, holding a ball in their hand, while a dog waits nearby with a curious expression.",
+#             "frame-2": "The child slowly raises their arm, preparing to throw the ball. The dog's attention is fully on the ball, poised to chase.",
+#             "frame-3": "The child gently tosses the ball forward. The dog begins to move, anticipation in every step.",
+#             "frame-4": "The ball bounces a few times on the grass, and the dog moves in for the catch, approaching with calculated steps.",
+#             "frame-5": "The dog reaches the ball, takes it in its mouth, and looks back at the child, who is still standing in the same spot.",
+#             "frame-6": "The child takes a few steps towards the dog, reaching out as if inviting the dog to return the ball.",
+#             "frame-7": "The dog trots over to the child, holding the ball proudly, tail wagging slowly.",
+#             "frame-8": "They both sit down on the grass, the dog still holding the ball, as the child leans over, sharing a quiet moment together."
+#         }
+#         #sg_end
 
-    In-context example 1:
+#     In-context example 2:
+#         #sg_start
+#         {
+#             "frame-1": "An adult is seated on a couch, holding a book, while a baby plays with a small toy on the floor in front of them.",
+#             "frame-2": "The baby crawls slowly toward the adult, reaching out with tiny hands. The adult looks up from the book, smiling.",
+#             "frame-3": "The adult puts down the book and extends their hand towards the baby, encouraging them to come closer.",
+#             "frame-4": "The baby reaches the adult, who gently picks them up and sits them on their lap, taking a moment to adjust.",
+#             "frame-5": "They sit quietly together for a moment, the adult pointing to pictures in the book and the baby watching attentively.",
+#             "frame-6": "The baby touches the book's pages, exploring the textures with curious fingers, while the adult watches patiently.",
+#             "frame-7": "The adult gently turns a page, showing the baby new images, speaking softly as they explain each picture.",
+#             "frame-8": "They continue sharing the book, enjoying a peaceful, slow moment, the baby now fully focused on the pages."
+#         }
+#         #sg_end
 
+    
+#     Answer:
+# """
+
+# """
+# The objects_entity lexicon containing 125 lexemes is numbered as follows:""" + opvsg_objects_numbered + """\n\
+#     and relations_entity lexicon containing 56 lexemes is numbered as follows:""" +  opvsg_predicates_numbered + """\n\
+    
+#     Given the objects and relations lexeme, the task is to generate description followed by triplets from the generated description in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon]. 
+#     The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
+#     Make sure the index of the objects_entity and relations_entity is maintained.
+#     Select relations_entity which best describes the relation between two objects.
+
+#     Note: It is possible that exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
+#     example-1: The relations_entity "grasping" can be mapped to "20.holding".
+#     example-2: The objects_entity "puppy" can be mapped to "43.dog".
+
+#     In-context example 1:
+#         #sg_start
+#         {
+#             "description" : "A child playing with ball on a street. He throws ball on the other side of the street, where another kid catches the ball.",
+#             "triplets": [
+#                 [["33.child-7", "38.playing with", "3.ball-2"], ["frame-1","frame-3"]],
+#                 [["33.child-7", "51.throwing", "3.ball-2"], ["frame-2", "frame-5"]],
+#                 [["33.child-5", "6.catching", "3.ball-2"], ["frame-5", "frame-8"]],
+#                 [["33.child-5", "46.standing on", "118.ground"], ["frame-5", "frame-8"]]
+#             ]
+#         }
+   
+#         From the provided video which contains 8 frames, generate triplets:
+#         Note: Please give the output in the format given above.
+
+#         In-context example 2:
+#         #sg_start
+#         {
+#             "description" : "An adult and a baby are in the kitchen, with the adult holding a bottle while feeding the baby who is sitting on a chair.",
+#             "triplets": [
+#                     [["0.adult-2", "20.holding", "15.bottle-4"], ["frame-1","frame-5"]],
+#                     [["0.adult-2", "15.feeding", "1.baby-6"], ["frame-1","frame-5"]],
+#                     [["1.baby-6", "45.sitting on", "32.chair"], ["frame-1","frame-5"]],
+#                     [["1.baby-6", "12.drinking from", "15.bottle-4"], ["frame-1","frame-5"]]
+#             ]
+#         }
+#         #sg_end
+# """
+Task_description_v13_with_ids_temporal = """
+    The task is to generate description followed by triplets from the generated description in the form of [[subject-id, relation, object-id],[frame-start, frame-end]]. 
+    The id is randomly assigned to each subject and object entity to ensure uniqueness and tracking throughout the video.
+    The frame-start and frame-end denotes when activity starts and end in the video. 'start' and 'end' is an integer value between 0 to 7.
+
+    Example 1:
         #sg_start
         {
-            "detailed_description": "A child is blowing a balloon in a sunny backyard. The balloon is bright red and inflates as the child continues to blow into it. Beside the child, a dog is playfully jumping and wagging its tail, seemingly excited about the balloon. The child releases the balloon, and it flies off, causing the dog to chase after it across the yard. After a while, the child and the dog lie on the grass, both happily watching the clouds." ,
-            "summary": "The video shows a child blowing a red balloon, with a dog eagerly playing beside them. As the balloon flies away, the dog chases it, and the scene ends with the child and dog lying on the grass, enjoying a peaceful moment together."
+            "description" : "A child playing with ball on a street. He throws ball on the other side of the street, where another kid catches the ball.",
+            "triplets": [
+                [["child-1", "playing with", "ball-3"],["frame-1", "frame-4"]],
+                [["child-1", "throwing", "ball-3"],["frame-2","frame-4"]],
+                [["child-2", "catching", "ball-3"],["frame-5", "frame-8"]],
+                [["child-2", "standing on", "ground-0"]["frame-5","frame-8"]],
+            ]
         }
         #sg_end
+"""
+
+Task_description_v13_with_ids = """
+    The task is to generate description from the provided video followed by triplets formation using the generated description in the form of [subject-id, relation, object-id].
+    The id is randomly assigned to each subject and object entity to ensure uniqueness and tracking throughout the video.
+
+    Output Example 1:
+        #sg_start
+        {
+            "description" : "A child playing with ball on a street. He throws ball on the other side of the street, where another kid catches the ball.",
+            "triplets": [
+                ["child-1", "playing with", "ball-3"],
+                ["child-1", "throwing", "ball-3"],
+                ["child-2", "catching", "ball-3"],
+                ["child-2", "standing on", "ground-0"]
+            ]
+        }
+        #sg_end
+    Answer:
+"""
+
+
+opvsg_predicates_numbered = """0.beside 1.biting 2.blowing 3.brushing 4.caressing 5.carrying 6.catching 7.chasing 8.cleaning 9.closing 10.cooking 11.cutting 12.drinking from 13.eating 14.entering 15.feeding 16.grabbing 17.guiding 18.hanging from 19.hitting 20.holding 21.hugging 22.in 23.in front of 24.jumping from 25.jumping over 26.kicking 27.kissing 28.licking 29.lighting 30.looking at 31.lying on 32.next to 33.on 34.opening 35.over 36.picking 37.playing 38.playing with 39.pointing to 40.pulling 41.pushing 42.riding 43.running on 44.shaking hand with 45.sitting on 46.standing on 47.stepping on 48.stirring 49.swinging 50.talking to 51.throwing 52.touching 53.toward 54.walking on 55.watering 56.wearing"""
+opvsg_objects_numbered = """0.adult 1.baby 2.bag 3.ball 4.ballon 5.basket 6.bat 7.bed 8.bench 9.beverage 10.bike 11.bird 12.blanket 13.board 14.book 15.bottle 16.bowl 17.box 18.bread 19.brush 20.bucket 21.cabinet 22.cake 23.camera 24.can 25.candle 26.car 27.card 28.carpet 29.cart 30.cat 31.cellphone 32.chair 33.child 34.chopstick 35.cloth 36.computer 37.condiment 38.cookie 39.countertop 40.cover 41.cup 42.curtain 43.dog 44.door 45.drawer 46.dustbin 47.egg 48.fan 49.faucet 50.fence 51.flower 52.fork 53.fridge 54.fruit 55.gift 56.glass 57.glasses 58.glove 59.grain 60.guitar 61.hat 62.helmet 63.horse 64.iron 65.knife 66.light 67.lighter 68.mat 69.meat 70.microphone 71.microwave 72.mop 73.net 74.noodle 75.others 76.oven 77.pan 78.paper 79.piano 80.pillow 81.pizza 82.plant 83.plate 84.pot 85.powder 86.rack 87.racket 88.rag 89.ring 90.scissor 91.shelf 92.shoe 93.simmering 94.sink 95.slide 96.sofa 97.spatula 98.sponge 99.spoon 100.spray 101.stairs 102.stand 103.stove 104.switch 105.table 106.teapot 107.towel 108.toy 109.tray 110.tv 111.vaccum 112.vegetable 113.washer 114.window 115.ceiling 116.floor 117.grass 118.ground 119.rock 120.sand 121.sky 122.snow 123.tree 124.wall 125.water"""
+
+
+
+
+vidvrd_predicates_numbered = """1.jump right 2.stand left 3.taller 4.jump past 5.jump behind 6.stand front 7.sit next to 8.sit behind 9.sit front 
+10.next to 11.front 12.stand next to 13.stand behind 14.walk right 15.walk next to 16.walk left 17.walk past 18.walk front 19.walk behind 20.faster 
+21.larger 22.stand with 23.stand right 24.walk with 25.walk toward 26.walk away 27.stop right 28.stop beneath 29.stand above 30.ride 31.run beneath 
+32.sit above 33.sit beneath 34.sit left 35.sit right 36.walk above 37.behind 38.watch 39.hold 40.feed 41.touch 42.right 43.left 44.follow 45.move front
+ 46.move beneath 47.chase 48.run left 49.run right 50.lie next to 51.lie behind 52.play 53.move behind 54.jump beneath 55.fly with 56.fly past 
+ 57.move right 58.move left 59.swim front 60.swim left 61.move with 62.jump front 63.jump left 64.swim right 65.swim next to 66.jump next to 
+ 67.swim with 68.move past 69.bite 70.pull 71.jump toward 72.fight 73.run front 74.run behind 75.sit inside 76.drive 77.lie front 78.stop behind 
+ 79.lie left 80.stop left 81.lie right 82.creep behind 83.creep above 84.beneath 85.above 86.fall off 87.stop front 88.run away 89.run next to 90.away 
+ 91.jump away 92.fly next to 93.lie beneath 94.jump above 95.lie above 96.walk beneath 97.stand beneath 98.move toward 99.toward 100.past 101.move away 
+ 102.run past 103.fly behind 104.fly above 105.fly left 106.lie with 107.creep away 108.creep left 109.creep front 110.run with 111.run toward 
+ 112.creep right 113.creep past 114.fly front 115.fly right 116.fly away 117.fly toward 118.stop above 119.stand inside 120.kick 121.run above 
+ 122.swim beneath 123.jump with 124.lie inside 125.move above 126.move next to 127.creep next to 128.creep beneath 129.swim behind 130.stop next to 
+ 131.stop with 132.creep toward"""
+
+vidvrd_objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse 7.monkey 8.fox 9.elephant 10.lion 11.giant_panda 12.airplane 13.whale 
+14.watercraft 15.car 16.bird 17.cattle 18.rabbit 19.snake 20.frisbee 21.motorcycle 22.ball 23.domestic_cat 24.bear 25.red_panda 26.lizard 27.skateboard 
+28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
+
+
+## 1 vid
+Task_description_v13_vidvrd_sam_with_list = """The objects lexicon containing 35 lexemes is numbered as follows:""" + vidvrd_objects_numbered + """ 
+and relations lexicon containing 132 lexemes is numbered as follows:""" +  vidvrd_predicates_numbered + """.
+Create action-based video scene-graph triplets by first providing a detailed description in 100-200 words using predefined lexicon with the focus on the main activities in the video (e.g., objects present, their placements, and actions). Then convert this description into [subject-id, relation, object-id] triplets using predefined lexicon, assign unique IDs to subjects and objects for tracking.
+Note:
+    - Triplets should be strictly three entities (e.g. ["2.person-3", "12.stand next to", "3.dog-5"])
+    - The output format should be consistant as shown in below example.
+
+    Example: 
+    #sg_start
+    {
+        "description": "The larger lion leading and the smaller lion follow behind. The larger lion walk front of the smaller lion. The smaller lion stand behind the larger lion. The larger lion walk past the smaller lion. The larger lion walk next to the smaller lion for a moment.",
+        "triplets": [
+            ["10.lion-3", "44.follow behind", "10.lion-1"],
+            ["10.lion-1", "18.walk front", "10.lion-3"],
+            ["10.lion-3", "13.stand behind", "10.lion-1"],
+            ["10.lion-1", "17.walk past", "10.lion-3"],
+            ["10.lion-1", "15.walk next to", "10.lion-3"]
+        ]
+    }
+    #sg_end
+    
+    Response:
+"""
+
+## 1 vid
+Task_description_v13_sam_with_list = """The objects lexicon containing 125 lexemes is numbered as follows:""" + opvsg_objects_numbered + """ 
+and relations lexicon containing 56 lexemes is numbered as follows:""" +  opvsg_predicates_numbered + """.
+Create action-based video scene-graph triplets by first providing a detailed description in 100-200 words using predefined lexicon with the focus on the main activities in the video (e.g., objects present, their placements, and actions). Then convert this description into [subject-id, relation, object-id] triplets using predefined lexicon, assign unique IDs to subjects and objects for tracking.
+Note:
+    - Triplets should be strictly three entities (i.e. subject-id, relation, object-id)
+    - The output format should be consistant as shown in below example.
+
+    Example: 
+    #sg_start
+    {
+        "description": "A child stands on a ground, holding a ball. The child starts throwing it across to his child friend, who steps forward, arms ready. A car slows down, passing carefully behind as the second child catches the ball with a grin",
+        "triplets": [
+            ["33.child-1", "46.standing on", "118.ground-0"],
+            ["33.child-1", "20.holding", "3.ball-5"],
+            ["33.child-1", "51.throwing", "3.ball-5"],
+            ["26.car-6", "33.on", "118.ground-0"],
+            ["33.child-4", "6.catching", "3.ball-5"]
+        ]
+    }
+    #sg_end
+    
+    Response:
+"""
+
+
+## 1 vid # GPT improved/shorten
+Task_description_v13_sam = """Create action-based video scene-graph triplets by first providing a detailed description of the main activities in the video (e.g., objects present, their placements, and actions). Convert this description into [subject-id, relation, object-id] triplets, assigning unique IDs to subjects and objects for tracking.
+Note:
+    - Triplets should be strictly three entities (i.e. subject-id, relation, object-id)
+Example: 
+#sg_start
+{
+    "description": "A boy stands on a quiet street, holding a ball. He throws it across to his friend, who steps forward, arms ready. A car slows down, passing carefully behind as the second child catches the ball with a grin.",
+    "triplets": [
+        ["child-1", "standing on", "street-0"],
+        ["child-1", "holding", "ball-3"],
+        ["child-1", "throws", "ball-3"],
+        ["car-6", "on", "street-0"],
+        ["child-4", "catches", "ball-3"]
+    ]
+}
+#sg_end
+Response:#sg_start
+"""
+
+# ## 1 vid
+# Task_description_v13_sam = """Generate action-based video scene-graph triplets by first describing the video in detail, then convert this description into [subject, relation, object] triplets.
+# Note:
+#     - The video description should focus on the main activities (e.g. what objects are present in the video? how they are placed in the scene? what they are doing? And what actions they are performing?)
+#     - Triplets should be strictly three entities (i.e. subject, relation, object)
+# Example: 
+# #sg_start
+# {
+#     "description": "A boy stands on a quiet street, holding a ball. He throws it across to his friend, who steps forward, arms ready. A car slows down, passing carefully behind as the second child catches the ball with a grin.",
+#     "triplets": [
+#         ["child", "standing on", "street"],
+#         ["child", "holding", "ball"],
+#         ["child", "throws", "ball"],
+#         ["car", "on", "street"],
+#         ["child", "catches", "ball"]
+#     ]
+# }
+# #sg_end
+# Response:#sg_start
+# """
+
+# 1 vid 0.01
+# Task_description_v13_sam = """
+#         Generate action-based video scene-graph triplets by first describing the video in detail focusing on the main actors and objects as well as relations between them in the video, then convert this description into [subject, relation, object] triplets.
+#         Example: 
+#         #sg_start
+#         {
+#             "description": "A boy stands on a quiet street, holding a ball. He throws it across to his friend, who steps forward, arms ready. A car slows down, passing carefully behind as the second child catches the ball with a grin.",
+#             "triplets": [
+#                 ["child", "standing on", "street"],
+#                 ["child", "holding", "ball"],
+#                 ["child", "throws", "ball"],
+#                 ["car", "on", "street"],
+#                 ["child", "catches", "ball"]
+#             ]
+#         }
+#         #sg_end
+#         Response:#sg_start
+# """
+
+Task_description_v13 = """
+    The task is to generate description from the provided video followed by triplets formation using the generated description in the form of [subject, relation, object]. 
+
+    Output Example 1:
+        #sg_start
+        {
+            "description" : "A child playing with ball on a street. He throws ball on the other side of the street, where another kid catches the ball.",
+            "triplets": [
+                ["child", "playing with", "ball"],
+                ["child", "throwing", "ball"],
+                ["child", "catching", "ball"],
+                ["child", "standing on", "ground"]
+            ]
+        }
+        #sg_end
+    Answer:
+"""
+
+Task_description_v12 = f"""The objects_entity lexicon containing 125 lexemes is numbered as follows:""" + opvsg_objects_numbered + """\n\
+    and relations_entity lexicon containing 56 lexemes is numbered as follows:""" +  opvsg_predicates_numbered + """\n\
+    
+    Given the objects and relations lexeme, the task is to generate triplets from the provided video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon]. 
+    The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
+    Make sure the index of the objects_entity and relations_entity is maintained.
+    Select relations_entity which best describes the relation between two objects.
+
+    Note: It is possible that exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
+    example-1: The relations_entity "grasping" can be mapped to "20.holding".
+    example-2: The objects_entity "puppy" can be mapped to "43.dog".
+    example-3: The relations_entity "adjacent to" can be mapped to "32.next to".
+    example-4: The relations_entity "leaping over" can be mapped to "25.jumping over".
+    example-5: The objects_entity "kid" can be mapped to "33.child".
+
+    In-context example 1:
+        #sg_start
+        {
+        "description" : "A child and a dog enjoy a playful day together on the grass. The child throws a ball, and the dog eagerly catches it, leading to a lively game of chase. After some energetic play, including the dog jumping over the child, they sit down to relax, eventually lying side by side on the grass, peacefully looking up at the sky together."
+        "triplets": [
+            [["33.child-7", "20.holding", "3.ball-2"], [frame-1]],
+            [["43.dog-3", "24.jumping from", "33.child-7"], [frame-1]],
+            [["43.dog-3", "0.beside", "33.child-7"], [frame-1, frame-8]],
+            [["33.child-7", "51.throwing", "3.ball-2"], [frame-2]],
+            [["43.dog-3", "6.catching", "3.ball-2"], [frame-2]],
+            [["33.child-7", "7.chasing", "43.dog-3"], [frame-3]],
+            [["43.dog-3", "43.running on", "117.grass-5"], [frame-3]],`
+            [["33.child-7", "36.picking", "118.ground-9"], [frame-4]],
+            [["43.dog-3", "30.looking at", "33.child-7"], [frame-4, frame-5]],
+            [["43.dog-3", "25.jumping over", "33.child-7"], [frame-5]],
+            [["33.child-7", "45.sitting on", "117.grass-5"], [frame-6]],
+            [["43.dog-3", "45.sitting on", "117.grass-5"], [frame-6]],
+            [["33.child-7", "50.talking to", "43.dog-3"], [frame-6]],
+            [["33.child-7", "31.lying on", "117.grass-5"], [frame-7]],
+            [["43.dog-3", "31.lying on", "117.grass-5"], [frame-7]],
+            [["43.dog-3", "32.next to", "33.child-7"], [frame-7]],
+            [["33.child-7", "30.looking at", "121.sky-4"], [frame-8]],
+            [["43.dog-3", "30.looking at", "121.sky-4"], [frame-8]]
+            ],
+        }  
 
     In-context example 2:
         #sg_start
         {
-            "detailed_description": "An adult is cooking on a stove in a cozy kitchen. They are stirring a pot with a wooden spoon, and the sound of simmering fills the room. In front of them on the countertop, a child is sitting on a stool, holding a spoon and eagerly watching the cooking process. The adult occasionally hands the child small pieces of vegetables to add to the pot, and the child drops them in with a big smile. Toward the end, the adult and child taste the soup together, both smiling and nodding in approval." ,
-            "summary": "This video captures an adult and a child cooking together. The adult stirs a pot on the stove while the child sits on a stool in front of them, helping by adding vegetables. The scene ends with them tasting the soup together, sharing smiles and a sense of accomplishment."
+            "scene": { 
+                "description" : "An adult and a baby are in the kitchen, with the adult holding a bottle while feeding the baby who is sitting on a chair.",
+            },
+            "triplets": [
+                [["0.adult-2", "20.holding", "15.bottle-4"], [frame-1,frame-5]],
+                [["0.adult-2", "15.feeding", "1.baby-6"], [frame-1]],
+                [["1.baby-6", "45.sitting on", "32.chair"], [frame-1]],
+                [["1.baby-6", "23.in front of", "0.adult-2"],[frame-1]],
+                [["1.baby-6", "12.drinking from", "15.bottle-4"], [frame-2,frame-4]],
+                [["0.adult-2", "30.looking at", "1.baby-6"],[frame-2,frame-5]],
+                [["1.baby-6", "20.holding", "15.bottle-4"], [frame-3]],
+                [["0.adult-2", "53.toward", "1.baby-6"],[frame-3]],
+                [["0.adult-2", "4.caressing", "1.baby-6"], [frame-4]],
+                [["1.baby-6", "30.looking at", "0.adult-2"], [frame-5,frame-7]],
+                [["0.adult-2", "47.stepping on", "116.floor-0"], [frame-6]]
+                [["1.baby-6", "31.lying on", "116.floor-0"], [frame-6]]
+                [["1.baby-6", "0.beside", "0.adult-2"],[frame-6]]
+                [["0.adult-2", "36.picking", "108.toy-9"], [frame-7]],
+                [["0.adult-2", "38.playing with", "108.toy-9"], [frame-8]]
+                [["1.baby-6", "38.playing with", "108.toy-9"], [frame-8]]
+                [["0.adult-2", "45.sitting on", "116.floor-0"], [frame-8]]
+                [["1.baby-6", "45.sitting on", "116.floor-0"],[frame-8]]
+            ]
         }
         #sg_end
-    
-    Now, from the provided video provide detailed description of and a short summary,the output format should be same as above In-context examples: 
+   
+        From the provided video which contains 8 frames, generate triplets:
+        Note: Please give the output in the format given above.
 """
 
 
-
-
-
-Task_description_v10_pvsg = f"""The predefined objects_entity lexicon containing 126 lexemes is numbered as follows: """ + objects_numbered_pvsg + """
-    and predefined relations_entity lexicon containing 57 lexemes is numbered as follows: """ +  opvsg_predicates_numbered + """
-
-    Given the objects and relations lexeme, the task is to describe the provided video in deatail and create triplets in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon] using the predefined entity lexicon. 
+Task_description_v11 = f"""The objects_entity lexicon containing 125 lexemes is numbered as follows:""" + opvsg_objects_numbered + """\n\
+    and relations_entity lexicon containing 56 lexemes is numbered as follows:""" +  opvsg_predicates_numbered + """\n\
+    
+    Given the objects and relations lexeme, the task is to generate triplets from the provided video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon]. 
     The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
+    Make sure the index of the objects_entity and relations_entity is maintained.
+    Select relations_entity which best describes the relation between two objects.
 
-    Please note: It is possible that the exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
-        Example-1: The relations_entity 'snuggling' can be mapped to '21.hugging'.
-        Example-2: The objects_entity 'infant' can be mapped to '1.baby'.
-        Example-3: The relations_entity 'transporting' can be mapped to '5.carrying'.
-        Example-4: The relations_entity 'smacking' can be mapped to '19.hitting'.
-        Example-5: The objects_entity 'drinks' can be mapped to '9.beverage'.
-        Example-6: The objects_entity "television" can be mapped to "110.tv".
-
+    Note: It is possible that exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
+    example-1: The relations_entity "grasping" can be mapped to "20.holding".
+    example-2: The objects_entity "puppy" can be mapped to "43.dog".
+    example-3: The relations_entity "adjacent to" can be mapped to "32.next to".
+    example-4: The relations_entity "leaping over" can be mapped to "25.jumping over".
+    example-5: The objects_entity "kid" can be mapped to "33.child".
 
     In-context example 1:
-
         #sg_start
         {
             "scene": { 
@@ -107,7 +410,6 @@ Task_description_v10_pvsg = f"""The predefined objects_entity lexicon containing
         #sg_end
 
     In-context example 2:
-
         #sg_start
         {
             "scene": { 
@@ -148,25 +450,30 @@ Task_description_v10_pvsg = f"""The predefined objects_entity lexicon containing
             "st progression": "The scene portrays a nurturing interaction between an adult and a baby. The adult holds a bottle and feeds the baby, while the baby engages by drinking and eventually holding the bottle. Afterward, they play together with a toy, sharing smiles and laughter."
         }
         #sg_end
-    
-    
-    Now, from the provided video which has 8 frames generate the triplets, output format should be same as above In-context examples: 
+        
+        
+        From the provided video which contains 8 frames, generate triplets.
+        Please give the output in the format given above.
 """
 
 
-predicates_numbered = """1.jump right 2.stand left 3.taller 4.jump past 5.jump behind 6.stand front 7.sit next to 8.sit behind 9.sit front 10.next to 11.front 12.stand next to 13.stand behind 14.walk right 15.walk next to 16.walk left 17.walk past 18.walk front 19.walk behind 20.faster 21.larger 22.stand with 23.stand right 24.walk with 25.walk toward 26.walk away 27.stop right 28.stop beneath 29.stand above 30.ride 31.run beneath 32.sit above 33.sit beneath 34.sit left 35.sit right 36.walk above 37.behind 38.watch 39.hold 40.feed 41.touch 42.right 43.left 44.follow 45.move front 46.move beneath 47.chase 48.run left 49.run right 50.lie next to 51.lie behind 52.play 53.move behind 54.jump beneath 55.fly with 56.fly past 57.move right 58.move left 59.swim front 60.swim left 61.move with 62.jump front 63.jump left 64.swim right 65.swim next to 66.jump next to 67.swim with 68.move past 69.bite 70.pull 71.jump toward 72.fight 73.run front 74.run behind 75.sit inside 76.drive 77.lie front 78.stop behind 79.lie left 80.stop left 81.lie right 82.creep behind 83.creep above 84.beneath 85.above 86.fall off 87.stop front 88.run away 89.run next to 90.away 91.jump away 92.fly next to 93.lie beneath 94.jump above 95.lie above 96.walk beneath 97.stand beneath 98.move toward 99.toward 100.past 101.move away 102.run past 103.fly behind 104.fly above 105.fly left 106.lie with 107.creep away 108.creep left 109.creep front 110.run with 111.run toward 112.creep right 113.creep past 114.fly front 115.fly right 116.fly away 117.fly toward 118.stop above 119.stand inside 120.kick 121.run above 122.swim beneath 123.jump with 124.lie inside 125.move above 126.move next to 127.creep next to 128.creep beneath 129.swim behind 130.stop next to 131.stop with 132.creep toward"""
-objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse 7.monkey 8.fox 9.elephant 10.lion 11.giant_panda 12.airplane 13.whale 14.watercraft 15.car 16.bird 17.cattle 18.rabbit 19.snake 20.frisbee 21.motorcycle 22.ball 23.domestic_cat 24.bear 25.red_panda 26.lizard 27.skateboard 28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
-Task_description_v10 = f"""The predefined objects_entity lexicon containing 35 lexemes is numbered as follows: """ + objects_numbered + """ \n\
-    and predefined relations_entity lexicon containing 132 lexemes is numbered as follows: """ + predicates_numbered + """ \n\
+
+
+
+
+Task_description_v10 = f"""The objects_entity lexicon containing 35 lexemes is numbered as follows:""" + vidvrd_objects_numbered + """\n\
+    and relations_entity lexicon containing 132 lexemes is numbered as follows:""" +  vidvrd_predicates_numbered + """\n\
     
-    Given the objects and relations lexeme, the task is to generate triplets from the video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon] using the predefined entity lexicon. 
+    Given the objects and relations lexeme, the task is to generate triplets from the provided video in the form of [objects_entity-id lexicon, relations_entity lexicon, objects_entity-id lexicon]. 
     The id is randomly assigned to each object-entity to ensure uniqueness and tracking throughout the video.
+    Make sure the index of the objects_entity and relations_entity is maintained.
+    Select relations_entity which best describes the relation between two objects.
 
     Note: It is possible that exact relations_entity or objects_entity might not be visible in the video, but those can be aligned, refer below examples.
-        example-1: the relations_entity 'being touched and leaned over by' can be mapped to '41.touch'.
-        example-2: the relations_entity 'sitting straighter' can be mapped to '75.sit'.
-        example-3: the objects_entity 'rider' can be mapped to '2.person'.
-        example-4: the objects_entity 'deer' can be mapped to '1.antelope'.
+    example-1: the relations_entity 'being touched and leaned over by' can be mapped to '41.touch'.
+    example-2: the relations_entity 'sitting straighter' can be mapped to '75.sit'.
+    example-3: the objects_entity 'rider' can be mapped to '2.person'.
+    example-4: the objects_entity 'deer' can be mapped to '1.antelope'.
 
     In-context Example 1:
         #sg_start
@@ -251,10 +558,11 @@ Task_description_v10 = f"""The predefined objects_entity lexicon containing 35 l
             "st progression": "The two bicycles and two people move through the scene, interacting closely. The bicycles are ridden by the people, with movements emphasizing spatial relationships such as moving left, right, in front, and behind."
         }
         #sg_end
-
-    Now, from the provided video generate the triplets. Answer: 
+        
+        From the provided video which contains 8 frames, generate triplets:
+        Note: Triplets should describe spatial(objects placement in the scene with referece to other objects) and action relationships between objects present in the video. Please give the output in the format given above.
 """
-
+#Note: Triplets should describe whats happening in the video. Please give the output in the format given above.
 
 
 Task_description_v9 = """Identify and describe the objects in this video scene, their spatial positions relative to each other, and the actions they are performing over time. 
@@ -273,7 +581,7 @@ Also, describe how these interactions evolve as time progresses.
         - Do not use any relations if it does not accurately describe an action or spatial relationship between the objects present in the video.
     
     In-context Example 1:
-        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
+        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -301,7 +609,7 @@ Also, describe how these interactions evolve as time progresses.
         #sg_end
 
     In-context Example 2:
-        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
+        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -352,7 +660,7 @@ Also, describe how these interactions evolve as time progresses.
     
     In-context Example 1:
         Given list of Objects=[mountain, river,person, book, door,horse, train, plane,chair,monkey] and 
-        Relations/Actions/Temporal Changes=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
+        Relations/Actions/Temporal Changes=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -381,7 +689,7 @@ Also, describe how these interactions evolve as time progresses.
 
     In-context Example 2:
         Given list of Objects=[fence,mountain,river,person, book,ball,door,horse,park,train, plane,chair,monkey, dog] and 
-        Relations/Actions/Temporal Changes=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
+        Relations/Actions/Temporal Changes=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -429,7 +737,7 @@ Also, describe how these interactions evolve as time progresses.
         - Do not use any relations if it does not accurately describe an action or spatial relationship between the objects present in the video.
     
     In-context Example 1:
-        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
+        Given list of Relations=[jump front,sitting on,walk behind,standing next to,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
 
         #sg_start
         {
@@ -457,7 +765,7 @@ Also, describe how these interactions evolve as time progresses.
         #sg_end
 
     In-context Example 2:
-        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,catching,holding,chasing,walking toward]
+        Given list of Relations=[jump front,running in,jumping over,walk behind,in front of,stand front,stand behind,walk front,reaching for,cathcing,holding,chasing,walking toward]
 
         #sg_start
         {

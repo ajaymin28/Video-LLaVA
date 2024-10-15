@@ -6,20 +6,15 @@ importlib.reload(TaskDescription)
 importlib.reload(ActualQuestion)
 importlib.reload(Prompts)
 
-Detect_Count_objects = {
-    "v0": "Identify the objects present in the video, assign each of them a unique integer #id for tracking.",
-    "use_list_of_objects": {
-        "v0":   """ 
-                - For example, if in step-2 we get adult-1, and provided list given is [person, wood, trees] then replace adult-1 as person-1 since they do not change the meaning.
-                - Another example, if in step-2 we get baby-2 and provided list given is [child, women, men] then replace baby-2 as child-1 since they do not change the meaning.
-                """
-    }
-}
-
-
-Prompts_ = {
-    "default": Prompts.v10_prompt_pvsg_justcaptions,
-    "version_10_pvsg": Prompts.v10_prompt_pvsg,
+# print(type(Prompts.v10_prompt), Prompts.v10_prompt)
+Prompts_ = { 
+    "version_13_wids_temporal": Prompts.v13_prompt_withIds_temporal,
+    "version_13_wids": Prompts.v13_prompt_withIds,
+    "default": Prompts.v13_prompt_sam,
+    "version_13_sam": Prompts.v13_prompt_sam,
+    "version_13": Prompts.v13_prompt,
+    "version_12": Prompts.v12_prompt,
+    "version_11": Prompts.v11_prompt,
     "version_10": Prompts.v10_prompt,
     "version_9": Prompts.v9_prompt,
     "version_8": Prompts.v8_prompt,
@@ -30,6 +25,6 @@ Prompts_ = {
     "version_1": Prompts.v1_prompt
 }
 
-with open("/root/jbhoi/gits/Video-LLaVA/prompts.pkl", "wb") as f:
+with open("/home/jbhol/dso/gits/Video-LLaVA/prompts.pkl", "wb") as f:
     pickle.dump(Prompts_, f, protocol=pickle.HIGHEST_PROTOCOL)
     # pickle.dump(Prompts,f)

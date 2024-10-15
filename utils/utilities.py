@@ -566,6 +566,56 @@ def validate_model_response(model_response):
     
 #     return frame_triplets
 
+def pre_clean_prediction_data_onevision_v7(model_response, fileData=None):
+    frame_triplets = {
+        "triplets": [],
+        "scene": [],
+        "st_progression": []
+    }
+    prediction_data = model_response
+    prediction_data = prediction_data.strip("</s>").lower()
+
+    if "#sg_start" in prediction_data and "#sg_end" in prediction_data:
+
+        # print(cleanString)
+        try:
+            cleanString = get_substring_between(s=prediction_data,start_substring="#sg_start",end_substring="#sg_end")
+            comment_str = "// This triplet is not necessary as it does not provide additional information.\n"
+            if comment_str in cleanString:
+                cleanString = cleanString.replace(comment_str, "")
+        except Exception as e:
+            print("error getting sgblock data")
+    else:
+        cleanString = prediction_data
+
+    # print(cleanString)
+    try:
+        evaluated_string_json = eval(cleanString)
+        for key,frame_data in evaluated_string_json.items():
+            if key=="scene":
+                frame_triplets["scene"].append(frame_data)
+            elif key=="st progression":
+                frame_triplets["st_progression"].append(frame_data)
+            else:
+                # strkey = str(key)
+                # strkey_f_index = strkey.strip("F")  # F1 ==> 1
+                current_frame_triplets = []
+                for frame_triplet in frame_data["triplets"]:
+                    if len(frame_triplet)==3:
+                        current_frame_triplets.append(frame_triplet)
+                    else:
+                        print("invalid length for triplet",frame_triplet)
+                frame_triplets["triplets"].append(current_frame_triplets)
+
+    except Exception as e:
+        print(e, fileData)
+        print("model response", model_response)
+        pass
+
+
+
+    return frame_triplets
+
 def pre_clean_prediction_data_onevision_v6(model_response, fileData=None):
     frame_triplets = {
         "triplets": [],

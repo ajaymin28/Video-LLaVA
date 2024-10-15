@@ -6,14 +6,36 @@ importlib.reload(InContextExamples)
 importlib.reload(objectspredicates)
 
 
-v10_prompt_pvsg_justcaptions = TaskDescription.Task_description_v10_pvsg_justcaptions + """
+V13_TaskDescription_withids_temporal = TaskDescription.Task_description_v13_with_ids_temporal
+v13_prompt_withIds_temporal = f"""{V13_TaskDescription_withids_temporal}
 """
 
-v10_prompt_pvsg = TaskDescription.Task_description_v10_pvsg + """
+V13_TaskDescription_vidvrd_withids = TaskDescription.Task_description_v13_vidvrd_sam_with_list
+v13_prompt_vidvrd_withIds = f"""{V13_TaskDescription_vidvrd_withids}
+"""
+
+V13_TaskDescription_withids = TaskDescription.Task_description_v13_sam_with_list
+v13_prompt_withIds = f"""{V13_TaskDescription_withids}
+"""
+
+V13_TaskDescription_sam = TaskDescription.Task_description_v13_sam
+v13_prompt_sam = f"""{V13_TaskDescription_sam}
+"""
+
+V13_TaskDescription_ = TaskDescription.Task_description_v13
+v13_prompt = f"""{V13_TaskDescription_}
+"""
+
+V12_TaskDescription_ = TaskDescription.Task_description_v12
+v12_prompt = f"""{V12_TaskDescription_}
+"""
+
+V11_TaskDescription_ = TaskDescription.Task_description_v11
+v11_prompt = f"""{V11_TaskDescription_}
 """
 
 V10_TaskDescription_ = TaskDescription.Task_description_v10
-v10_prompt = V10_TaskDescription_ + """
+v10_prompt = f"""{V10_TaskDescription_}
 """
 
 V9_TaskDescription_ = TaskDescription.Task_description_v9
