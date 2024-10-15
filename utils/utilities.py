@@ -62,6 +62,7 @@ def remove_ids(frames_tripletes, version="v2_1", remove_indexes=False):
     return frames_tripletes
 
 def eval_tagging_scores(gt_relations, pred_relations, min_pred_num=1):
+    """ Modified from https://github.com/zhengsipeng/VRDFormer_VRD/blob/main/util/evaluate.py"""
     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
     gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
     pred_triplets = []
@@ -83,36 +84,37 @@ def eval_tagging_scores(gt_relations, pred_relations, min_pred_num=1):
     for i, t in enumerate(pred_triplets):
         if t not in gt_triplets:
             fp_cnt +=1
-
+            
     rec = tp_cnt/np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
     prec = tp_cnt/np.maximum(tp_cnt+fp_cnt, np.finfo(np.float32).eps)
 
     return prec, rec, gt_hit_scores
 
-# def eval_tagging_scores_vrdformer(gt_relations, pred_relations, min_pred_num=0):
-#     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
-#     # ignore trajectories
-#     gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
-#     pred_triplets = []
-#     hit_scores = []
-#     for r in pred_relations:
-#         triplet = tuple(r['triplet'])
-#         if not triplet in pred_triplets:
-#             pred_triplets.append(triplet)
-#             hit_scores.append(r['score'])
+def eval_tagging_scores_vrdformer(gt_relations, pred_relations, min_pred_num=0):
+    """ Copied from https://github.com/zhengsipeng/VRDFormer_VRD/blob/main/util/evaluate.py"""
+    pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
+    # ignore trajectories
+    gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
+    pred_triplets = []
+    hit_scores = []
+    for r in pred_relations:
+        triplet = tuple(r['triplet'])
+        if not triplet in pred_triplets:
+            pred_triplets.append(triplet)
+            hit_scores.append(r['score'])
  
-#     hit_scores.extend([-np.inf]*(min_pred_num-len(hit_scores)))
-#     hit_scores = np.asarray(hit_scores)
-#     for i, t in enumerate(pred_triplets):
-#         if not t in gt_triplets:
-#             hit_scores[i] = -np.inf
-#     tp = np.isfinite(hit_scores)
-#     fp = ~tp
-#     cum_tp = np.cumsum(tp).astype(np.float32)
-#     cum_fp = np.cumsum(fp).astype(np.float32)
-#     rec = cum_tp / np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
-#     prec = cum_tp / np.maximum(cum_tp + cum_fp, np.finfo(np.float32).eps)
-#     return prec, rec, hit_scores
+    hit_scores.extend([-np.inf]*(min_pred_num-len(hit_scores)))
+    hit_scores = np.asarray(hit_scores)
+    for i, t in enumerate(pred_triplets):
+        if not t in gt_triplets:
+            hit_scores[i] = -np.inf
+    tp = np.isfinite(hit_scores)
+    fp = ~tp
+    cum_tp = np.cumsum(tp).astype(np.float32)
+    cum_fp = np.cumsum(fp).astype(np.float32)
+    rec = cum_tp / np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
+    prec = cum_tp / np.maximum(cum_tp + cum_fp, np.finfo(np.float32).eps)
+    return prec, rec, hit_scores
 
 def calculate_accuracy_varying_lengths(gt_triplets, pred_triplets, remove_duplicates=True):
     """
@@ -310,100 +312,10 @@ def create_batch_frames(vid_data, totalFrames, frame_batch=8):
 
         batch_of_frames.append(frames_to_consider)
         batch_rels.append(rel_by_frames)
-            # while len(frames_to_consider)<8:
-            #     random_idx = random.choice(total_frame_indices)
-            #     if random_idx not in frames_to_consider:
-            #         frames_to_consider.append(random_idx)
-            #     if len(frames_to_consider)>=8:
-            #         break
-            # batch_of_frames.append(frames_to_consider)
 
-
-    # frames_to_consider = []
-    # batch_of_frames = []
-    # batch_of_frames_rels = []
-    # batch_rels = []
-    # for idx, vid_r in enumerate(vid_rels):
-    #     sub = vid_r[0]
-    #     obj = vid_r[1]
-    #     rel = vid_r[2]
-    #     frames = vid_r[3].copy()
-    #     frame_start, frame_end = frames[0][0], frames[0][1]
-    #     if frame_start>totalFrames:
-    #        continue
-    #     if frame_end>totalFrames:
-    #        continue
-
-    #     if frame_start not in frames_to_consider:
-    #         frames_to_consider.append(frame_start)
-    #         subn = vid_objects_by_id[sub]["category"]
-    #         objn = vid_objects_by_id[obj]["category"]
-    #         rels_for_the_block.append([subn,rel,objn])
-
-    #     if len(frames_to_consider)>=8:
-    #         batch_of_frames.append(frames_to_consider)
-    #         batch_rels.append(rels_for_the_block)
-    #         frames_to_consider = []
-    #         rels_for_the_block = []
-
-
-    # if len(rels_for_the_block)>0:
-    #     batch_rels.append(rels_for_the_block)
-
-
-    # # print("frames to consider ", len(frames_to_consider))
-    # if len(frames_to_consider)>0 and len(frames_to_consider)<8:
-    #     while len(frames_to_consider)<8:
-
-    #         random_idx = random.choice(total_frame_indices)
-    #         if random_idx not in frames_to_consider:
-    #             frames_to_consider.append(random_idx)
-
-    #         if len(frames_to_consider)>=8:
-    #             break
-    #     batch_of_frames.append(frames_to_consider)
-        
-    # total_frame_indices = [i for i in range(totalFrames)]
-    # current_frame_batch_idx = 0
-    # while current_frame_batch_idx<=total_frame_batch:
-    #     start_idx = current_frame_batch_idx * frame_batch
-    #     frames_to_infer = total_frame_indices[start_idx:start_idx+frame_batch]
-    #     # print(f"T {start_idx}:{start_idx+8} => {frames_to_infer}")
-    #     current_frame_batch_idx +=1
-    #     if len(frames_to_infer)<frame_batch:
-    #         print("less frames batch")
-    #         continue
-    #     batch_of_frames.append(frames_to_infer)
-    # last_batch_remaining = total_frame_indices[-remaining_frames-(frame_batch-remaining_frames):] # add previous batch frames to accomodate n batch
-    # batch_of_frames.append(last_batch_remaining)
-    # print("batch of frames", batch_of_frames)
 
     return batch_of_frames, remaining_frames, batch_rels
 
-# def create_batch_frames(totalFrames, frame_batch=8):
-#     ## out of total frames send frames in batch of 8.
-#     total_frame_batch = int(totalFrames/8)
-#     remaining_frames = totalFrames%8
-
-#     batch_of_frames = []
-
-#     total_frame_indices = [i for i in range(totalFrames)]
-#     current_frame_batch_idx = 0
-#     while current_frame_batch_idx<=total_frame_batch:
-#         start_idx = current_frame_batch_idx * frame_batch
-#         frames_to_infer = total_frame_indices[start_idx:start_idx+frame_batch]
-#         # print(f"T {start_idx}:{start_idx+8} => {frames_to_infer}")
-#         current_frame_batch_idx +=1
-#         if len(frames_to_infer)<frame_batch:
-#             # print("less frames batch")
-#             continue
-#         batch_of_frames.append(frames_to_infer)
-
-    
-#     last_batch_remaining = total_frame_indices[-remaining_frames-(frame_batch-remaining_frames):] # add previous batch frames to accomodate n batch
-#     batch_of_frames.append(last_batch_remaining)
-
-#     return batch_of_frames, remaining_frames
 
 def getboundingBoxOftheObject(data_root, vid_id, frame_id, object_id, normlize_bb=True, dataset="vidor"):
     mask_name = os.path.join(data_root, dataset, 'masks', vid_id, f'{str(frame_id).zfill(4)}.png')
@@ -533,38 +445,6 @@ def validate_model_response(model_response):
         return False
     
     return True
-
-
-# def pre_clean_prediction_data_v3vidvrd(model_response):
-#     frame_triplets = []
-#     prediction_data = model_response
-#     prediction_data = prediction_data.strip("</s>")
-#     framewiseTriplets = prediction_data.split(f"{SGSpecialTokens.VIDEO_FRAME_ID}")[1:]
-
-#     special_tokens = SGSpecialTokens.get_tokens()
-#     for cnt_idx, ftriplets in enumerate(framewiseTriplets):
-
-#         for spetok in special_tokens:
-#             ftriplets = ftriplets.replace(f"{spetok}", "")
-
-#         ftriplets = ftriplets.replace(f":", ",")
-#         ftriplets = ftriplets.split(";")
-
-#         current_frame_triplets = []
-
-#         for ftr in ftriplets:
-#             ftr_temp = ftr.split(",")
-#             if len(ftr_temp)==3:
-#                 # print("conveting to list",ftr)
-#                 ftr_temp[0] = str(ftr_temp[0]).strip("[").strip("]")
-#                 ftr_temp[1] = str(ftr_temp[1]).strip("[").strip("]")
-#                 ftr_temp[1] = ftr_temp[1].strip().replace(" ","_") # predicates are trained by removing _ and appended again for evaluation
-#                 ftr_temp[2] = str(ftr_temp[2]).strip("[").strip("]")  
-#                 current_frame_triplets.append(ftr_temp)
-
-#         frame_triplets.append(current_frame_triplets)
-    
-#     return frame_triplets
 
 def pre_clean_prediction_data_onevision_v7(model_response, fileData=None):
     frame_triplets = {
