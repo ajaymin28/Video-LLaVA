@@ -2,27 +2,7 @@ import os
 from PIL import Image
 import numpy as np
 import random
-import json
 import re
-
-
-def chunk_list(list_to_chunk, chunk_size):
-    chunk_size = max(1, chunk_size)
-    return (list_to_chunk[i:i+chunk_size] for i in range(0, len(list_to_chunk), chunk_size))
-
-def load_pvsg_annotations(data_root, json_file):
-  """
-  Loads PVSG dataset in format {vid_id: annotation:{} }
-  """
-  with open(os.path.join(data_root, json_file), 'r') as f:
-      anno = json.load(f)
-
-  print('Keys inside pvsg.json:', list(anno.keys()))
-  print('Number of Object Classes:', len(anno['objects']['thing']))
-  print('Number of Stuff Classes:', len(anno['objects']['stuff']))
-  print('Number of Relation Classes:', len(anno['relations']))
-
-  return {data_dict['video_id']: data_dict for data_dict in anno['data']}, anno
 
 def get_substring_between(s, start_substring, end_substring):
     try:
@@ -83,7 +63,6 @@ def remove_ids(frames_tripletes, version="v2_1", remove_indexes=False):
     return frames_tripletes
 
 def eval_tagging_scores(gt_relations, pred_relations, min_pred_num=1):
-    """ Modified from https://github.com/zhengsipeng/VRDFormer_VRD/blob/main/util/evaluate.py"""
     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
     gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
     pred_triplets = []
@@ -105,37 +84,36 @@ def eval_tagging_scores(gt_relations, pred_relations, min_pred_num=1):
     for i, t in enumerate(pred_triplets):
         if t not in gt_triplets:
             fp_cnt +=1
-            
+
     rec = tp_cnt/np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
     prec = tp_cnt/np.maximum(tp_cnt+fp_cnt, np.finfo(np.float32).eps)
 
     return prec, rec, gt_hit_scores
 
-def eval_tagging_scores_vrdformer(gt_relations, pred_relations, min_pred_num=0):
-    """ Copied from https://github.com/zhengsipeng/VRDFormer_VRD/blob/main/util/evaluate.py"""
-    pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
-    # ignore trajectories
-    gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
-    pred_triplets = []
-    hit_scores = []
-    for r in pred_relations:
-        triplet = tuple(r['triplet'])
-        if not triplet in pred_triplets:
-            pred_triplets.append(triplet)
-            hit_scores.append(r['score'])
+# def eval_tagging_scores_vrdformer(gt_relations, pred_relations, min_pred_num=0):
+#     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
+#     # ignore trajectories
+#     gt_triplets = set(tuple(r['triplet']) for r in gt_relations)
+#     pred_triplets = []
+#     hit_scores = []
+#     for r in pred_relations:
+#         triplet = tuple(r['triplet'])
+#         if not triplet in pred_triplets:
+#             pred_triplets.append(triplet)
+#             hit_scores.append(r['score'])
  
-    hit_scores.extend([-np.inf]*(min_pred_num-len(hit_scores)))
-    hit_scores = np.asarray(hit_scores)
-    for i, t in enumerate(pred_triplets):
-        if not t in gt_triplets:
-            hit_scores[i] = -np.inf
-    tp = np.isfinite(hit_scores)
-    fp = ~tp
-    cum_tp = np.cumsum(tp).astype(np.float32)
-    cum_fp = np.cumsum(fp).astype(np.float32)
-    rec = cum_tp / np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
-    prec = cum_tp / np.maximum(cum_tp + cum_fp, np.finfo(np.float32).eps)
-    return prec, rec, hit_scores
+#     hit_scores.extend([-np.inf]*(min_pred_num-len(hit_scores)))
+#     hit_scores = np.asarray(hit_scores)
+#     for i, t in enumerate(pred_triplets):
+#         if not t in gt_triplets:
+#             hit_scores[i] = -np.inf
+#     tp = np.isfinite(hit_scores)
+#     fp = ~tp
+#     cum_tp = np.cumsum(tp).astype(np.float32)
+#     cum_fp = np.cumsum(fp).astype(np.float32)
+#     rec = cum_tp / np.maximum(len(gt_triplets), np.finfo(np.float32).eps)
+#     prec = cum_tp / np.maximum(cum_tp + cum_fp, np.finfo(np.float32).eps)
+#     return prec, rec, hit_scores
 
 def calculate_accuracy_varying_lengths(gt_triplets, pred_triplets, remove_duplicates=True):
     """
@@ -242,34 +220,34 @@ def get_bb_subj_obj(data_root,vid_id,frame_idx,subject_id,object_id):
 
   return sub_bb, obj_bb, mask_size
 
-# def get_frame_range_for_annotations(vid_objects, vid_data):
-#   min_frame_idx, max_frame_idx = -1, 0
-#   frames_for_obj = {}
-#   for vid_obj_idx, vobj in enumerate(vid_objects):
-#     category = vobj["category"]
-#     object_id = vobj["object_id"]
-#     frames_ = getFramesForObject(vid_data=vid_data, Subject_id=object_id)
-#     if frames_=="None":
-#         continue
+def get_frame_range_for_annotations(vid_objects, vid_data):
+  min_frame_idx, max_frame_idx = -1, 0
+  frames_for_obj = {}
+  for vid_obj_idx, vobj in enumerate(vid_objects):
+    category = vobj["category"]
+    object_id = vobj["object_id"]
+    frames_ = getFramesForObject(vid_data=vid_data, Subject_id=object_id)
+    if frames_=="None":
+        continue
     
-#     for frame_range in frames_:
-#       frame_start, frame_end = frame_range
+    for frame_range in frames_:
+      frame_start, frame_end = frame_range
 
-#       if f"{category}{object_id}" not in frames_for_obj:
-#         frames_for_obj[f"{category}{object_id}"] = {
-#           "frames": []
-#         }
+      if f"{category}{object_id}" not in frames_for_obj:
+        frames_for_obj[f"{category}{object_id}"] = {
+          "frames": []
+        }
 
-#       frames_for_obj[f"{category}{object_id}"]["frames"].append(frame_range)
+      frames_for_obj[f"{category}{object_id}"]["frames"].append(frame_range)
 
-#       if min_frame_idx ==-1:
-#           min_frame_idx = frame_start
-#       if frame_start<=min_frame_idx:
-#         min_frame_idx = frame_start
-#       if frame_end>=max_frame_idx:
-#         max_frame_idx = frame_end
+      if min_frame_idx ==-1:
+          min_frame_idx = frame_start
+      if frame_start<=min_frame_idx:
+        min_frame_idx = frame_start
+      if frame_end>=max_frame_idx:
+        max_frame_idx = frame_end
 
-#   return min_frame_idx, max_frame_idx, frames_for_obj
+  return min_frame_idx, max_frame_idx, frames_for_obj
 
 def create_batch_frames(vid_data, totalFrames, frame_batch=8):
     ## out of total frames send frames in batch of 8.
@@ -333,10 +311,100 @@ def create_batch_frames(vid_data, totalFrames, frame_batch=8):
 
         batch_of_frames.append(frames_to_consider)
         batch_rels.append(rel_by_frames)
+            # while len(frames_to_consider)<8:
+            #     random_idx = random.choice(total_frame_indices)
+            #     if random_idx not in frames_to_consider:
+            #         frames_to_consider.append(random_idx)
+            #     if len(frames_to_consider)>=8:
+            #         break
+            # batch_of_frames.append(frames_to_consider)
 
+
+    # frames_to_consider = []
+    # batch_of_frames = []
+    # batch_of_frames_rels = []
+    # batch_rels = []
+    # for idx, vid_r in enumerate(vid_rels):
+    #     sub = vid_r[0]
+    #     obj = vid_r[1]
+    #     rel = vid_r[2]
+    #     frames = vid_r[3].copy()
+    #     frame_start, frame_end = frames[0][0], frames[0][1]
+    #     if frame_start>totalFrames:
+    #        continue
+    #     if frame_end>totalFrames:
+    #        continue
+
+    #     if frame_start not in frames_to_consider:
+    #         frames_to_consider.append(frame_start)
+    #         subn = vid_objects_by_id[sub]["category"]
+    #         objn = vid_objects_by_id[obj]["category"]
+    #         rels_for_the_block.append([subn,rel,objn])
+
+    #     if len(frames_to_consider)>=8:
+    #         batch_of_frames.append(frames_to_consider)
+    #         batch_rels.append(rels_for_the_block)
+    #         frames_to_consider = []
+    #         rels_for_the_block = []
+
+
+    # if len(rels_for_the_block)>0:
+    #     batch_rels.append(rels_for_the_block)
+
+
+    # # print("frames to consider ", len(frames_to_consider))
+    # if len(frames_to_consider)>0 and len(frames_to_consider)<8:
+    #     while len(frames_to_consider)<8:
+
+    #         random_idx = random.choice(total_frame_indices)
+    #         if random_idx not in frames_to_consider:
+    #             frames_to_consider.append(random_idx)
+
+    #         if len(frames_to_consider)>=8:
+    #             break
+    #     batch_of_frames.append(frames_to_consider)
+        
+    # total_frame_indices = [i for i in range(totalFrames)]
+    # current_frame_batch_idx = 0
+    # while current_frame_batch_idx<=total_frame_batch:
+    #     start_idx = current_frame_batch_idx * frame_batch
+    #     frames_to_infer = total_frame_indices[start_idx:start_idx+frame_batch]
+    #     # print(f"T {start_idx}:{start_idx+8} => {frames_to_infer}")
+    #     current_frame_batch_idx +=1
+    #     if len(frames_to_infer)<frame_batch:
+    #         print("less frames batch")
+    #         continue
+    #     batch_of_frames.append(frames_to_infer)
+    # last_batch_remaining = total_frame_indices[-remaining_frames-(frame_batch-remaining_frames):] # add previous batch frames to accomodate n batch
+    # batch_of_frames.append(last_batch_remaining)
+    # print("batch of frames", batch_of_frames)
 
     return batch_of_frames, remaining_frames, batch_rels
 
+# def create_batch_frames(totalFrames, frame_batch=8):
+#     ## out of total frames send frames in batch of 8.
+#     total_frame_batch = int(totalFrames/8)
+#     remaining_frames = totalFrames%8
+
+#     batch_of_frames = []
+
+#     total_frame_indices = [i for i in range(totalFrames)]
+#     current_frame_batch_idx = 0
+#     while current_frame_batch_idx<=total_frame_batch:
+#         start_idx = current_frame_batch_idx * frame_batch
+#         frames_to_infer = total_frame_indices[start_idx:start_idx+frame_batch]
+#         # print(f"T {start_idx}:{start_idx+8} => {frames_to_infer}")
+#         current_frame_batch_idx +=1
+#         if len(frames_to_infer)<frame_batch:
+#             # print("less frames batch")
+#             continue
+#         batch_of_frames.append(frames_to_infer)
+
+    
+#     last_batch_remaining = total_frame_indices[-remaining_frames-(frame_batch-remaining_frames):] # add previous batch frames to accomodate n batch
+#     batch_of_frames.append(last_batch_remaining)
+
+#     return batch_of_frames, remaining_frames
 
 def getboundingBoxOftheObject(data_root, vid_id, frame_id, object_id, normlize_bb=True, dataset="vidor"):
     mask_name = os.path.join(data_root, dataset, 'masks', vid_id, f'{str(frame_id).zfill(4)}.png')
@@ -467,11 +535,52 @@ def validate_model_response(model_response):
     
     return True
 
-def pre_clean_prediction_data_onevision_v7(model_response, fileData=None):
-    frame_triplets = {
-        "triplets": [],
+
+# def pre_clean_prediction_data_v3vidvrd(model_response):
+#     frame_triplets = []
+#     prediction_data = model_response
+#     prediction_data = prediction_data.strip("</s>")
+#     framewiseTriplets = prediction_data.split(f"{SGSpecialTokens.VIDEO_FRAME_ID}")[1:]
+
+#     special_tokens = SGSpecialTokens.get_tokens()
+#     for cnt_idx, ftriplets in enumerate(framewiseTriplets):
+
+#         for spetok in special_tokens:
+#             ftriplets = ftriplets.replace(f"{spetok}", "")
+
+#         ftriplets = ftriplets.replace(f":", ",")
+#         ftriplets = ftriplets.split(";")
+
+#         current_frame_triplets = []
+
+#         for ftr in ftriplets:
+#             ftr_temp = ftr.split(",")
+#             if len(ftr_temp)==3:
+#                 # print("conveting to list",ftr)
+#                 ftr_temp[0] = str(ftr_temp[0]).strip("[").strip("]")
+#                 ftr_temp[1] = str(ftr_temp[1]).strip("[").strip("]")
+#                 ftr_temp[1] = ftr_temp[1].strip().replace(" ","_") # predicates are trained by removing _ and appended again for evaluation
+#                 ftr_temp[2] = str(ftr_temp[2]).strip("[").strip("]")  
+#                 current_frame_triplets.append(ftr_temp)
+
+#         frame_triplets.append(current_frame_triplets)
+    
+#     return frame_triplets
+
+def remove_triplet_indexes(triplet):
+    return [remove_idx(element) for element in triplet]
+
+
+def pre_clean_prediction_data_onevision_v14_vrd(model_response, fileData=None, remove_entity_idx=False, contains_temporal_entity=False):
+    """
+    Quadruplets for spatial + action predicates
+    """
+    block_triplets = {
+        "quadruplets": [[] for i in range(8)],
+        "triplets": [[] for i in range(8)],
         "scene": [],
-        "st_progression": []
+        "description": [],
+        "objects": []
     }
     prediction_data = model_response
     prediction_data = prediction_data.strip("</s>").lower()
@@ -489,33 +598,142 @@ def pre_clean_prediction_data_onevision_v7(model_response, fileData=None):
     else:
         cleanString = prediction_data
 
+    # cleanString = re.sub(r"(frame-\d+)", r"'\1'", cleanString)
+
     # print(cleanString)
     try:
-        evaluated_string_json = eval(cleanString)
+        # print("evaluating")
+        evaluated_string_json = eval(cleanString.replace("#sg_end", ""))
         for key,frame_data in evaluated_string_json.items():
+            # print(key)
             if key=="scene":
-                frame_triplets["scene"].append(frame_data)
-            elif key=="st progression":
-                frame_triplets["st_progression"].append(frame_data)
-            else:
+                block_triplets["scene"].append(frame_data)
+            elif key=="description":
+                block_triplets["description"].append(frame_data)
+            elif key=="objects":
+                block_triplets["objects"].append(frame_data)
+            elif key=="quadruplets":
                 # strkey = str(key)
                 # strkey_f_index = strkey.strip("F")  # F1 ==> 1
-                current_frame_triplets = []
-                for frame_triplet in frame_data["triplets"]:
-                    if len(frame_triplet)==3:
-                        current_frame_triplets.append(frame_triplet)
-                    else:
-                        print("invalid length for triplet",frame_triplet)
-                frame_triplets["triplets"].append(current_frame_triplets)
+                # current_frame_triplets = []
+                for frame_Quadruplets in frame_data:
+                    if contains_temporal_entity:
+                        frame_Quadruplets, Quadruplets_time = frame_Quadruplets
 
+                    if len(frame_Quadruplets)==4:
+                        if remove_entity_idx:
+                            frame_Quadruplets = remove_triplet_indexes(triplet=frame_Quadruplets)
+
+                        # convert to triplets
+                        frame_triplet = [frame_Quadruplets[0],f"{frame_Quadruplets[1]} {frame_Quadruplets[2]}",frame_Quadruplets[3]]
+
+                        if contains_temporal_entity:
+                            if len(Quadruplets_time)==1:
+                                # single frame
+                                triplet_time_fidx = int(Quadruplets_time[0].split("-")[-1])
+                                if triplet_time_fidx>7:
+                                    continue
+                                block_triplets["triplets"][triplet_time_fidx].append(frame_triplet)
+                                block_triplets["quadruplets"][triplet_time_fidx].append(frame_Quadruplets)
+                            else:
+                                triplet_time_fidx_start = int(Quadruplets_time[0].split("-")[-1])
+                                triplet_time_fidx_end = int(Quadruplets_time[0].split("-")[-1])
+                                for j in range(triplet_time_fidx_start,triplet_time_fidx_end):
+                                    if j>8:
+                                        continue
+                                    block_triplets["triplets"][j].append(frame_triplet)
+                                    block_triplets["quadruplets"][j].append(frame_Quadruplets)
+                        else:
+                            for j in range(8):
+                                block_triplets["triplets"][j].append(frame_triplet)
+                                block_triplets["quadruplets"][j].append(frame_Quadruplets)
+                            # multi frame
+                    else:
+                        print("invalid length for Quadruplets",frame_Quadruplets)
     except Exception as e:
         print(e, fileData)
-        print("model response", model_response)
+        # print("model response", model_response)
         pass
 
 
+    return block_triplets
 
-    return frame_triplets
+def pre_clean_prediction_data_onevision_v7(model_response, fileData=None, remove_entity_idx=False, contains_temporal_entity=False):
+    block_triplets = {
+        "triplets": [[] for i in range(8)],
+        "scene": [],
+        "description": [],
+        "objects": []
+    }
+    prediction_data = model_response
+    prediction_data = prediction_data.strip("</s>").lower()
+
+    if "#sg_start" in prediction_data and "#sg_end" in prediction_data:
+
+        # print(cleanString)
+        try:
+            cleanString = get_substring_between(s=prediction_data,start_substring="#sg_start",end_substring="#sg_end")
+            comment_str = "// This triplet is not necessary as it does not provide additional information.\n"
+            if comment_str in cleanString:
+                cleanString = cleanString.replace(comment_str, "")
+        except Exception as e:
+            print("error getting sgblock data")
+    else:
+        cleanString = prediction_data
+
+    # cleanString = re.sub(r"(frame-\d+)", r"'\1'", cleanString)
+
+    # print(cleanString)
+    try:
+        # print("evaluating")
+        evaluated_string_json = eval(cleanString.replace("#sg_end", ""))
+        for key,frame_data in evaluated_string_json.items():
+            # print(key)
+            if key=="scene":
+                block_triplets["scene"].append(frame_data)
+            elif key=="description":
+                block_triplets["description"].append(frame_data)
+            elif key=="objects":
+                block_triplets["objects"].append(frame_data)
+            elif key=="triplets":
+                # strkey = str(key)
+                # strkey_f_index = strkey.strip("F")  # F1 ==> 1
+                current_frame_triplets = []
+                for frame_triplet in frame_data:
+                    if contains_temporal_entity:
+                        frame_triplet, triplet_time = frame_triplet
+
+                    if len(frame_triplet)==3:
+                        if remove_entity_idx:
+                            frame_triplet = remove_triplet_indexes(triplet=frame_triplet)
+
+                        if contains_temporal_entity:
+                            if len(triplet_time)==1:
+                                # single frame
+                                triplet_time_fidx = int(triplet_time[0].split("-")[-1])
+                                if triplet_time_fidx>7:
+                                    continue
+                                block_triplets["triplets"][triplet_time_fidx].append(frame_triplet)
+                            else:
+                                triplet_time_fidx_start = int(triplet_time[0].split("-")[-1])
+                                triplet_time_fidx_end = int(triplet_time[0].split("-")[-1])
+                                for j in range(triplet_time_fidx_start,triplet_time_fidx_end):
+                                    if j>8:
+                                        continue
+                                    block_triplets["triplets"][j].append(frame_triplet)
+                        else:
+                            for j in range(8):
+                                block_triplets["triplets"][j].append(frame_triplet)
+                            # multi frame
+                    else:
+                        print("invalid length for triplet",frame_triplet)
+    except Exception as e:
+        print(e, fileData)
+        # print("model response", model_response)
+        pass
+
+
+    return block_triplets
 
 def pre_clean_prediction_data_onevision_v6(model_response, fileData=None):
     frame_triplets = {
@@ -536,6 +754,7 @@ def pre_clean_prediction_data_onevision_v6(model_response, fileData=None):
                 cleanString = cleanString.replace(comment_str, "")
         except Exception as e:
             print("error getting sgblock data")
+    
     else:
         cleanString = prediction_data
 
@@ -605,42 +824,6 @@ def pre_clean_prediction_data_v7_with_time(model_response):
         pass
     
     return frame_triplets, frame_triplets_time_windows
-
-
-
-def post_clean_pvsg_prediction_data_v17(model_response):
-    frame_triplets = []
-    prediction_data = model_response
-    prediction_data = prediction_data.strip("</s>")
-    framewiseTriplets = prediction_data.split(f"#frameseg")[1:]
-
-    # special_tokens = SGSpecialTokens.get_tokens()
-
-    for cnt_idx, ftriplets in enumerate(framewiseTriplets):
-        if cnt_idx>7:
-            break
-
-        # for spetok in special_tokens:
-        #     ftriplets = ftriplets.replace(f"{spetok}", "")
-
-        ftriplets = ftriplets.replace(f":", ",")
-        ftriplets = ftriplets.split(";")
-
-        current_frame_triplets = []
-
-        for ftr in ftriplets:
-            ftr_temp = ftr.split(",")
-            if len(ftr_temp)==3:
-                # print("conveting to list",ftr)
-                ftr_temp[0] = str(ftr_temp[0]).strip("[").strip("]")
-                ftr_temp[1] = str(ftr_temp[1]).strip("[").strip("]")
-                ftr_temp[2] = str(ftr_temp[2]).strip("[").strip("]")  
-                current_frame_triplets.append(ftr_temp)
-
-        frame_triplets.append(current_frame_triplets)
-    
-    return frame_triplets
-
 
 def pre_clean_prediction_data_v18(model_response):
     frame_triplets = []
@@ -740,341 +923,3 @@ def remove_duplicates(frame_level_prediction_for_block):
         
         frame_level_prediction_for_block[frame] = triplates
     return frame_level_prediction_for_block, all_over_triplates
-
-
-prompts_list = {
-    
-    "summary": ["Describe the video in detail",
-                "What is happening in the video?",
-                "What is the central narrative or story in the video?",
-                "What is the purpose or goal of the video?",
-                "What are the key takeaways or lessons from the video?"
-                ],
-
-    "identify_subject_objects": [
-                        "List the objects present in the video",
-                        "What objects, items, or elements appear prominently?", 
-                        "Identify any significant objects in the video.",
-                        "What objects are visible in the video?",
-                        "List the main objects featured in the video.",
-                        "what are the main objects featured in the video?"
-                        ],
-    "identify_predicates": [
-                            "List the actions, movements or placements of the objects in the scene.",
-                            "Describe any interactions between people or objects in the video.",
-                            "Describe any significant gestures or interactions between objects in the scene",
-                            "How subjects and objects relates to each other in the video?",
-                            "How do the objects interact with their environment in the video?",
-                            "Describe any notable physical interactions between objects in the video.",
-                            "Describe any interactions that highlight the relationships between objects.",
-                            "What actions or events take place in the video?",
-                          ],
-    "SGG": [
-       "Generate frame-by-frame scene graph for the provided video",
-       "Provide frame-by-frame Scene graph triplets in the form of [Subject-id:Predicate:Object-id]",
-       "Generate scene graph for the provided video",
-       "Provide scene graph for the provided video",
-       "Identify subjects, predicates and objects frame-by-frame in the provided video"
-    ],
-
-    "SGG_image": [
-       "Generate scene graph for the provided image",
-       "Provide Scene graph triplets in the form of [Subject-id:Predicate:Object-id] for the provided image",
-       "Generate scene graph for the provided image",
-       "Provide scene graph for the provided image",
-       "Identify subjects, predicates and objects in the provided image"
-    ],
-
-    "SGG_with_bb": [
-       "Generate frame-by-frame scene graph for the provided video along with bounding box of each objects",
-       "Provide frame-by-frame Scene graph triplets in the form of [Subject-id-[min_x,min_y,max_x,max_y]:Predicate:Object-id-[min_x,min_y,max_x,max_y]]",
-       "Generate scene graph for the provided video along with bounding box of each objects",
-       "Provide scene graph for the provided video with bounding box location of each objects",
-       "Identify Subjects, Predicates and Objects frame-by-frame in the provided video, also provide bounding box location of each subject and object"
-    ],
-
-    "sg_localization": [
-      "Provide bounding box location of [{sub}:{rel}:{obj}] in frame {frame_idx} of the provided video" # {} to be replaced by actual value
-      #"Provide bounding box location of [{sub}:{rel}:{obj}]" # {} to be replaced by actual value
-    ],
-
-    "sg_localization_image": [
-      "Provide bounding box location of [{sub}:{rel}:{obj}]" # {} to be replaced by actual value
-    ]
-
-
-}
-
-
-def getConvBlock(value,conv_type="human", media_type="<image>", add_media_token=False):
-   assert conv_type=="human" or conv_type=="gpt"
-   assert media_type=="<image>" or media_type=="<video>"
-   conv = {"from": conv_type, "value": f"{value}"}
-   if add_media_token:
-      conv["value"] = f"{media_type}\n{value}"
-   else:
-      conv["value"] = f"{value}" 
-
-   return conv
-
-def getPromptTemplate(media_path, media_type="image"):
-  assert media_type=="image" or media_type=="video"
-  Prompt = {
-          "id": "TobeUpdated",
-          f"{media_type}": f"{media_path}",
-          "conversations": [],
-          "frame_indices": [],  # selected indices will be passed to model for train and test
-          "total_frames": "",
-  }
-  return Prompt
-
-
-def getRandomPrompt(key="summary", static=False):
-    if static:
-       return prompts_list[key][0]
-    return random.choice(prompts_list[key])
-
-def getFramesForObject(vid_data, Subject_id):
-    vid_rels = vid_data["relations"]
-    for idx, vid_r in enumerate(vid_rels):
-        sub = vid_r[0]
-        obj = vid_r[1]
-        # rel = vid_r[2]
-        frames_ = vid_r[3].copy()
-        if Subject_id==sub or Subject_id==obj:
-            return frames_
-    return "None"
-
-
-def getbbcenter(bb):
-   if len(bb)<4:
-    return []
-   x1,y1,x2,y2 = bb
-   bb_w = (x2 - x1)/2
-   bb_h = (y2 - y1)/2
-   xcenter = x1 + bb_w
-   ycenter = y1 + bb_h
-   return [round(xcenter,3), round(ycenter,3)]
-
-def getListofCategoryString(data_root, vid_objects, vid_data, addObjectId=False, addFrames=False, addBB=False , uniform_sampling_idx=8):
-    
-    AnswerString = ""
-    frame_indices = []
-    total_frames = vid_data["meta"]["num_frames"]
-    """V11 implementation
-    [X] Select frames which covers all objects, avoid repetations
-    """
-
-    frames_where_obj_is_present = {}
-    min_frame_idx, max_frame_idx, frames_for_obj = get_frame_range_for_annotations(vid_objects, vid_data)
-
-    for frame_idx  in range(min_frame_idx, max_frame_idx+1):
-      if frame_idx>total_frames:
-         continue
-
-      if frame_idx not in frames_where_obj_is_present.keys():
-        frames_where_obj_is_present[frame_idx] ={
-          "objects_present": [],
-          "object_bb": [],
-          "object_cnt": 0
-        }
-
-      for vid_obj_idx, vobj in enumerate(vid_objects):
-        category = vobj["category"]
-        object_id = vobj["object_id"]
-        
-        try:
-          sub_bb, mask_size = getboundingBoxOftheObject(data_root=data_root,vid_id=vid_data["video_id"],frame_id=frame_idx, object_id=object_id)
-        except FileNotFoundError:
-          pass
-
-        if sum(sub_bb)>0:
-          frames_where_obj_is_present[frame_idx]["objects_present"].append(vobj)
-          frames_where_obj_is_present[frame_idx]["object_bb"].append(sub_bb)
-          frames_where_obj_is_present[frame_idx]["object_cnt"] +=1
-
-    # Take frames with more objects count first
-    frames_with_obj_cnt = [(frames_where_obj_is_present[f_idx]["object_cnt"], f_idx) for f_idx in frames_where_obj_is_present]
-    frames_with_obj_cnt = sorted(frames_with_obj_cnt,reverse=True)
-
-    objects_added = []
-
-    """
-    Frame wise
-    AnswerString = {
-      0: "floor-1, wall-1, pillow-4",
-      1: "floor-1, wall-1, shelf-4"
-      .
-      .
-      7: "obj1,obj2"
-    }
-    """
-
-    AnswerString += "{"
-
-    for f_obj_idx, f_obj_cnt in enumerate(frames_with_obj_cnt):
-      cnt_,f_idx = f_obj_cnt
-      data = frames_where_obj_is_present[f_idx]
-
-      AnswerString += f"{f_obj_idx}:"
-      AnswerString +="'"  # start the list of objects string by "'"
-
-      objects_present = data["objects_present"]
-      objects_bb = data["object_bb"]
-
-      frame_indices.append(f_idx) # use frame indices where object annotations are present
-
-      for oidx, obj in enumerate(objects_present):
-        category = obj["category"]
-        object_id = obj["object_id"]
-
-        # object_name_id = f"{category}-{object_id}"
-        # if object_name_id not in objects_added:
-        #   """This ensures unique objects in the list"""
-        #   objects_added.append(object_name_id)
-
-        AnswerString += f"{category}"
-
-        if addObjectId:
-          AnswerString += f"-{object_id}"
-
-        if addBB:
-          AnswerString += f"-{objects_bb[oidx]}"
-        if addFrames:
-          AnswerString += f"_[{f_idx}]"
-
-        if oidx!=len(objects_present)-1:
-          AnswerString +=","
-        else:
-          AnswerString +="'"  # finish the list of objects string by "'"
-        
-        if f_obj_idx>6:
-           # TODO: some objects which appears in low count, will not be taken due to object density
-           # In order to resolve this issue, need to accomodate all frames in 8 frames
-           break
-        
-        if f_obj_idx!=len(frames_with_obj_cnt)-1:
-           AnswerString += f"," # end of current key in dict
-
-
-    AnswerString += "}"
-
-    return AnswerString, frame_indices
-
-
-def getboundingBoxOftheObject(data_root, vid_id, frame_id, object_id, normlize_bb=True, dataset="vidor"):
-    mask_name = os.path.join(data_root, dataset, 'masks', vid_id, f'{str(frame_id).zfill(4)}.png')
-    mask = Image.open(mask_name)
-    mask = np.array(mask)
-
-    segmentation = np.where(mask == object_id)
-    mask_h, mask_w = mask.shape[0],mask.shape[1]
-    # maskbb = np.zeros(shape=(mask_h,mask_w,3), dtype=np.uint8)
-
-    # Bounding Box
-    bbox = []
-    if len(segmentation) != 0 and len(segmentation[1]) != 0 and len(segmentation[0]) != 0:
-        x_min = int(np.min(segmentation[1]))
-        x_max = int(np.max(segmentation[1]))
-        y_min = int(np.min(segmentation[0]))
-        y_max = int(np.max(segmentation[0]))
-
-        if normlize_bb:
-           x_min = round(x_min/mask_w,3)
-           x_max = round(x_max/mask_w,3)
-           y_min = round(y_min/mask_h,3)
-           y_max = round(y_max/mask_h,3)
-
-        bbox = [x_min, y_min, x_max, y_max]
-        # print(bbox)
-        # cv2.rectangle(maskbb, (x_min, y_min), (x_max, y_max), (36,255,12), 2)
-
-    return bbox,[mask_h, mask_w]
-
-
-
-def get_pvsg_frame_range_for_annotations(vid_objects, vid_data,):
-  min_frame_idx, max_frame_idx = -1, 0
-  frames_for_obj = {}
-  for vid_obj_idx, vobj in enumerate(vid_objects):
-    category = vobj["category"]
-    object_id = vobj["object_id"]
-    frames_ = getFramesForObject(vid_data=vid_data, Subject_id=object_id)
-    if frames_=="None":
-        continue
-    
-    for frame_range in frames_:
-      frame_start, frame_end = frame_range
-
-      if f"{category}{object_id}" not in frames_for_obj:
-        frames_for_obj[f"{category}{object_id}"] = {
-          "frames": []
-        }
-
-      frames_for_obj[f"{category}{object_id}"]["frames"].append(frame_range)
-
-      if min_frame_idx ==-1:
-        min_frame_idx = frame_start
-      if frame_start<=min_frame_idx:
-        min_frame_idx = frame_start
-      if frame_end>=max_frame_idx:
-        max_frame_idx = frame_end
-
-  return min_frame_idx, max_frame_idx, frames_for_obj
-
-
-
-### PVSG helpers
-
-
-def get_pvsg_VideoCaptions(vid_data, correct_object_ids=False):
-    vid_objects = vid_data["objects"] # {'object_id': 2, 'category': 'countertop', 'is_thing': True, 'status': []},
-    # vid_objects_by_id = {data_dict['object_id']: data_dict for data_dict in vid_objects} # for relations
-    vid_rels = vid_data["relations"]
-    object_id_pattern_in_descr = r"\((\d+)\)"
-    AnswerString = ""
-    vid_caps = vid_data['captions']
-    for idx, vid_c in enumerate(vid_caps):
-        if correct_object_ids:
-           """
-           Converts adult (1)  ==> adult.1
-           """
-           vid_description = re.sub(object_id_pattern_in_descr, r".\1", vid_c["description"])
-           vid_description = vid_description.replace(" .",".")
-        else:
-           vid_description = vid_c["description"]
-           
-        AnswerString += vid_description
-        if idx!=len(vid_rels)-1:
-            AnswerString +=","
-    return AnswerString
-
-def get_pvsg_VideoQandAPairs(vid_data, correct_object_ids=False):
-    QnAPairs = []
-    vid_qna = vid_data['qa_pairs']
-    for idx, vid_qna in enumerate(vid_qna):
-        # time_point = vid_qna["time"]
-        Question = vid_qna["question"]
-        Answer = vid_qna["answer"]
-
-        if correct_object_ids:
-           object_id_pattern_in_descr = r"\((\d+)\)"
-           Question = re.sub(object_id_pattern_in_descr, r".\1", Question).replace(" .", ".")
-           Answer = re.sub(object_id_pattern_in_descr, r".\1", Answer).replace(" .", ".")
-
-
-        QnASeq = [{
-          "from": "human",
-          "value": f"<video>\n{Question}"
-        },
-        {
-          "from": "gpt",
-          "value": Answer
-        }]
-        QnAPairs.append(QnASeq)
-
-    return QnAPairs
-
-def get_pvsg_VideoSummary(vid_data):
-    AnswerString = vid_data['summary']
-    return AnswerString
