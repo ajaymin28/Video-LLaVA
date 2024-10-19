@@ -4,6 +4,7 @@ import copy
 import numpy as np
 from tqdm import tqdm
 
+DEBUG = False
 
 def get_frame_eval(vid_id,block_id,frames,GT_Triplets,Pred_Triplets, 
                    sg_eval_counts,all_triplets_pairs,
@@ -58,9 +59,9 @@ def get_frame_eval(vid_id,block_id,frames,GT_Triplets,Pred_Triplets,
             # print(fpred)
 
             if check_alinged:
-                fpred_s = check_alignment(entity=fpred_s, alignment_list=alinged_subjects,debug=True)
-                fpred_p = check_alignment(entity=fpred_p, alignment_list=alinged_predicates,debug=True)
-                fpred_o = check_alignment(entity=fpred_o, alignment_list=alinged_objects,debug=True)
+                fpred_s = check_alignment(entity=fpred_s, alignment_list=alinged_subjects,debug=DEBUG)
+                fpred_p = check_alignment(entity=fpred_p, alignment_list=alinged_predicates,debug=DEBUG)
+                fpred_o = check_alignment(entity=fpred_o, alignment_list=alinged_objects,debug=DEBUG)
                 frame_pred_triplets[fpred_idx] = [fpred_s, fpred_p, fpred_o]
 
             pred_all["subject"].append({"triplet": fpred_s, "score": 1.0})

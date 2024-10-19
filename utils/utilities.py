@@ -2,6 +2,27 @@ import os
 from PIL import Image
 import numpy as np
 import random
+import json
+import re
+
+
+def chunk_list(list_to_chunk, chunk_size):
+    chunk_size = max(1, chunk_size)
+    return (list_to_chunk[i:i+chunk_size] for i in range(0, len(list_to_chunk), chunk_size))
+
+def load_pvsg_annotations(data_root, json_file):
+  """
+  Loads PVSG dataset in format {vid_id: annotation:{} }
+  """
+  with open(os.path.join(data_root, json_file), 'r') as f:
+      anno = json.load(f)
+
+  print('Keys inside pvsg.json:', list(anno.keys()))
+  print('Number of Object Classes:', len(anno['objects']['thing']))
+  print('Number of Stuff Classes:', len(anno['objects']['stuff']))
+  print('Number of Relation Classes:', len(anno['relations']))
+
+  return {data_dict['video_id']: data_dict for data_dict in anno['data']}, anno
 
 def get_substring_between(s, start_substring, end_substring):
     try:
@@ -221,34 +242,34 @@ def get_bb_subj_obj(data_root,vid_id,frame_idx,subject_id,object_id):
 
   return sub_bb, obj_bb, mask_size
 
-def get_frame_range_for_annotations(vid_objects, vid_data):
-  min_frame_idx, max_frame_idx = -1, 0
-  frames_for_obj = {}
-  for vid_obj_idx, vobj in enumerate(vid_objects):
-    category = vobj["category"]
-    object_id = vobj["object_id"]
-    frames_ = getFramesForObject(vid_data=vid_data, Subject_id=object_id)
-    if frames_=="None":
-        continue
+# def get_frame_range_for_annotations(vid_objects, vid_data):
+#   min_frame_idx, max_frame_idx = -1, 0
+#   frames_for_obj = {}
+#   for vid_obj_idx, vobj in enumerate(vid_objects):
+#     category = vobj["category"]
+#     object_id = vobj["object_id"]
+#     frames_ = getFramesForObject(vid_data=vid_data, Subject_id=object_id)
+#     if frames_=="None":
+#         continue
     
-    for frame_range in frames_:
-      frame_start, frame_end = frame_range
+#     for frame_range in frames_:
+#       frame_start, frame_end = frame_range
 
-      if f"{category}{object_id}" not in frames_for_obj:
-        frames_for_obj[f"{category}{object_id}"] = {
-          "frames": []
-        }
+#       if f"{category}{object_id}" not in frames_for_obj:
+#         frames_for_obj[f"{category}{object_id}"] = {
+#           "frames": []
+#         }
 
-      frames_for_obj[f"{category}{object_id}"]["frames"].append(frame_range)
+#       frames_for_obj[f"{category}{object_id}"]["frames"].append(frame_range)
 
-      if min_frame_idx ==-1:
-          min_frame_idx = frame_start
-      if frame_start<=min_frame_idx:
-        min_frame_idx = frame_start
-      if frame_end>=max_frame_idx:
-        max_frame_idx = frame_end
+#       if min_frame_idx ==-1:
+#           min_frame_idx = frame_start
+#       if frame_start<=min_frame_idx:
+#         min_frame_idx = frame_start
+#       if frame_end>=max_frame_idx:
+#         max_frame_idx = frame_end
 
-  return min_frame_idx, max_frame_idx, frames_for_obj
+#   return min_frame_idx, max_frame_idx, frames_for_obj
 
 def create_batch_frames(vid_data, totalFrames, frame_batch=8):
     ## out of total frames send frames in batch of 8.
@@ -719,3 +740,341 @@ def remove_duplicates(frame_level_prediction_for_block):
         
         frame_level_prediction_for_block[frame] = triplates
     return frame_level_prediction_for_block, all_over_triplates
+
+
+prompts_list = {
+    
+    "summary": ["Describe the video in detail",
+                "What is happening in the video?",
+                "What is the central narrative or story in the video?",
+                "What is the purpose or goal of the video?",
+                "What are the key takeaways or lessons from the video?"
+                ],
+
+    "identify_subject_objects": [
+                        "List the objects present in the video",
+                        "What objects, items, or elements appear prominently?", 
+                        "Identify any significant objects in the video.",
+                        "What objects are visible in the video?",
+                        "List the main objects featured in the video.",
+                        "what are the main objects featured in the video?"
+                        ],
+    "identify_predicates": [
+                            "List the actions, movements or placements of the objects in the scene.",
+                            "Describe any interactions between people or objects in the video.",
+                            "Describe any significant gestures or interactions between objects in the scene",
+                            "How subjects and objects relates to each other in the video?",
+                            "How do the objects interact with their environment in the video?",
+                            "Describe any notable physical interactions between objects in the video.",
+                            "Describe any interactions that highlight the relationships between objects.",
+                            "What actions or events take place in the video?",
+                          ],
+    "SGG": [
+       "Generate frame-by-frame scene graph for the provided video",
+       "Provide frame-by-frame Scene graph triplets in the form of [Subject-id:Predicate:Object-id]",
+       "Generate scene graph for the provided video",
+       "Provide scene graph for the provided video",
+       "Identify subjects, predicates and objects frame-by-frame in the provided video"
+    ],
+
+    "SGG_image": [
+       "Generate scene graph for the provided image",
+       "Provide Scene graph triplets in the form of [Subject-id:Predicate:Object-id] for the provided image",
+       "Generate scene graph for the provided image",
+       "Provide scene graph for the provided image",
+       "Identify subjects, predicates and objects in the provided image"
+    ],
+
+    "SGG_with_bb": [
+       "Generate frame-by-frame scene graph for the provided video along with bounding box of each objects",
+       "Provide frame-by-frame Scene graph triplets in the form of [Subject-id-[min_x,min_y,max_x,max_y]:Predicate:Object-id-[min_x,min_y,max_x,max_y]]",
+       "Generate scene graph for the provided video along with bounding box of each objects",
+       "Provide scene graph for the provided video with bounding box location of each objects",
+       "Identify Subjects, Predicates and Objects frame-by-frame in the provided video, also provide bounding box location of each subject and object"
+    ],
+
+    "sg_localization": [
+      "Provide bounding box location of [{sub}:{rel}:{obj}] in frame {frame_idx} of the provided video" # {} to be replaced by actual value
+      #"Provide bounding box location of [{sub}:{rel}:{obj}]" # {} to be replaced by actual value
+    ],
+
+    "sg_localization_image": [
+      "Provide bounding box location of [{sub}:{rel}:{obj}]" # {} to be replaced by actual value
+    ]
+
+
+}
+
+
+def getConvBlock(value,conv_type="human", media_type="<image>", add_media_token=False):
+   assert conv_type=="human" or conv_type=="gpt"
+   assert media_type=="<image>" or media_type=="<video>"
+   conv = {"from": conv_type, "value": f"{value}"}
+   if add_media_token:
+      conv["value"] = f"{media_type}\n{value}"
+   else:
+      conv["value"] = f"{value}" 
+
+   return conv
+
+def getPromptTemplate(media_path, media_type="image"):
+  assert media_type=="image" or media_type=="video"
+  Prompt = {
+          "id": "TobeUpdated",
+          f"{media_type}": f"{media_path}",
+          "conversations": [],
+          "frame_indices": [],  # selected indices will be passed to model for train and test
+          "total_frames": "",
+  }
+  return Prompt
+
+
+def getRandomPrompt(key="summary", static=False):
+    if static:
+       return prompts_list[key][0]
+    return random.choice(prompts_list[key])
+
+def getFramesForObject(vid_data, Subject_id):
+    vid_rels = vid_data["relations"]
+    for idx, vid_r in enumerate(vid_rels):
+        sub = vid_r[0]
+        obj = vid_r[1]
+        # rel = vid_r[2]
+        frames_ = vid_r[3].copy()
+        if Subject_id==sub or Subject_id==obj:
+            return frames_
+    return "None"
+
+
+def getbbcenter(bb):
+   if len(bb)<4:
+    return []
+   x1,y1,x2,y2 = bb
+   bb_w = (x2 - x1)/2
+   bb_h = (y2 - y1)/2
+   xcenter = x1 + bb_w
+   ycenter = y1 + bb_h
+   return [round(xcenter,3), round(ycenter,3)]
+
+def getListofCategoryString(data_root, vid_objects, vid_data, addObjectId=False, addFrames=False, addBB=False , uniform_sampling_idx=8):
+    
+    AnswerString = ""
+    frame_indices = []
+    total_frames = vid_data["meta"]["num_frames"]
+    """V11 implementation
+    [X] Select frames which covers all objects, avoid repetations
+    """
+
+    frames_where_obj_is_present = {}
+    min_frame_idx, max_frame_idx, frames_for_obj = get_frame_range_for_annotations(vid_objects, vid_data)
+
+    for frame_idx  in range(min_frame_idx, max_frame_idx+1):
+      if frame_idx>total_frames:
+         continue
+
+      if frame_idx not in frames_where_obj_is_present.keys():
+        frames_where_obj_is_present[frame_idx] ={
+          "objects_present": [],
+          "object_bb": [],
+          "object_cnt": 0
+        }
+
+      for vid_obj_idx, vobj in enumerate(vid_objects):
+        category = vobj["category"]
+        object_id = vobj["object_id"]
+        
+        try:
+          sub_bb, mask_size = getboundingBoxOftheObject(data_root=data_root,vid_id=vid_data["video_id"],frame_id=frame_idx, object_id=object_id)
+        except FileNotFoundError:
+          pass
+
+        if sum(sub_bb)>0:
+          frames_where_obj_is_present[frame_idx]["objects_present"].append(vobj)
+          frames_where_obj_is_present[frame_idx]["object_bb"].append(sub_bb)
+          frames_where_obj_is_present[frame_idx]["object_cnt"] +=1
+
+    # Take frames with more objects count first
+    frames_with_obj_cnt = [(frames_where_obj_is_present[f_idx]["object_cnt"], f_idx) for f_idx in frames_where_obj_is_present]
+    frames_with_obj_cnt = sorted(frames_with_obj_cnt,reverse=True)
+
+    objects_added = []
+
+    """
+    Frame wise
+    AnswerString = {
+      0: "floor-1, wall-1, pillow-4",
+      1: "floor-1, wall-1, shelf-4"
+      .
+      .
+      7: "obj1,obj2"
+    }
+    """
+
+    AnswerString += "{"
+
+    for f_obj_idx, f_obj_cnt in enumerate(frames_with_obj_cnt):
+      cnt_,f_idx = f_obj_cnt
+      data = frames_where_obj_is_present[f_idx]
+
+      AnswerString += f"{f_obj_idx}:"
+      AnswerString +="'"  # start the list of objects string by "'"
+
+      objects_present = data["objects_present"]
+      objects_bb = data["object_bb"]
+
+      frame_indices.append(f_idx) # use frame indices where object annotations are present
+
+      for oidx, obj in enumerate(objects_present):
+        category = obj["category"]
+        object_id = obj["object_id"]
+
+        # object_name_id = f"{category}-{object_id}"
+        # if object_name_id not in objects_added:
+        #   """This ensures unique objects in the list"""
+        #   objects_added.append(object_name_id)
+
+        AnswerString += f"{category}"
+
+        if addObjectId:
+          AnswerString += f"-{object_id}"
+
+        if addBB:
+          AnswerString += f"-{objects_bb[oidx]}"
+        if addFrames:
+          AnswerString += f"_[{f_idx}]"
+
+        if oidx!=len(objects_present)-1:
+          AnswerString +=","
+        else:
+          AnswerString +="'"  # finish the list of objects string by "'"
+        
+        if f_obj_idx>6:
+           # TODO: some objects which appears in low count, will not be taken due to object density
+           # In order to resolve this issue, need to accomodate all frames in 8 frames
+           break
+        
+        if f_obj_idx!=len(frames_with_obj_cnt)-1:
+           AnswerString += f"," # end of current key in dict
+
+
+    AnswerString += "}"
+
+    return AnswerString, frame_indices
+
+
+def getboundingBoxOftheObject(data_root, vid_id, frame_id, object_id, normlize_bb=True, dataset="vidor"):
+    mask_name = os.path.join(data_root, dataset, 'masks', vid_id, f'{str(frame_id).zfill(4)}.png')
+    mask = Image.open(mask_name)
+    mask = np.array(mask)
+
+    segmentation = np.where(mask == object_id)
+    mask_h, mask_w = mask.shape[0],mask.shape[1]
+    # maskbb = np.zeros(shape=(mask_h,mask_w,3), dtype=np.uint8)
+
+    # Bounding Box
+    bbox = []
+    if len(segmentation) != 0 and len(segmentation[1]) != 0 and len(segmentation[0]) != 0:
+        x_min = int(np.min(segmentation[1]))
+        x_max = int(np.max(segmentation[1]))
+        y_min = int(np.min(segmentation[0]))
+        y_max = int(np.max(segmentation[0]))
+
+        if normlize_bb:
+           x_min = round(x_min/mask_w,3)
+           x_max = round(x_max/mask_w,3)
+           y_min = round(y_min/mask_h,3)
+           y_max = round(y_max/mask_h,3)
+
+        bbox = [x_min, y_min, x_max, y_max]
+        # print(bbox)
+        # cv2.rectangle(maskbb, (x_min, y_min), (x_max, y_max), (36,255,12), 2)
+
+    return bbox,[mask_h, mask_w]
+
+
+
+def get_pvsg_frame_range_for_annotations(vid_objects, vid_data,):
+  min_frame_idx, max_frame_idx = -1, 0
+  frames_for_obj = {}
+  for vid_obj_idx, vobj in enumerate(vid_objects):
+    category = vobj["category"]
+    object_id = vobj["object_id"]
+    frames_ = getFramesForObject(vid_data=vid_data, Subject_id=object_id)
+    if frames_=="None":
+        continue
+    
+    for frame_range in frames_:
+      frame_start, frame_end = frame_range
+
+      if f"{category}{object_id}" not in frames_for_obj:
+        frames_for_obj[f"{category}{object_id}"] = {
+          "frames": []
+        }
+
+      frames_for_obj[f"{category}{object_id}"]["frames"].append(frame_range)
+
+      if min_frame_idx ==-1:
+        min_frame_idx = frame_start
+      if frame_start<=min_frame_idx:
+        min_frame_idx = frame_start
+      if frame_end>=max_frame_idx:
+        max_frame_idx = frame_end
+
+  return min_frame_idx, max_frame_idx, frames_for_obj
+
+
+
+### PVSG helpers
+
+
+def get_pvsg_VideoCaptions(vid_data, correct_object_ids=False):
+    vid_objects = vid_data["objects"] # {'object_id': 2, 'category': 'countertop', 'is_thing': True, 'status': []},
+    # vid_objects_by_id = {data_dict['object_id']: data_dict for data_dict in vid_objects} # for relations
+    vid_rels = vid_data["relations"]
+    object_id_pattern_in_descr = r"\((\d+)\)"
+    AnswerString = ""
+    vid_caps = vid_data['captions']
+    for idx, vid_c in enumerate(vid_caps):
+        if correct_object_ids:
+           """
+           Converts adult (1)  ==> adult.1
+           """
+           vid_description = re.sub(object_id_pattern_in_descr, r".\1", vid_c["description"])
+           vid_description = vid_description.replace(" .",".")
+        else:
+           vid_description = vid_c["description"]
+           
+        AnswerString += vid_description
+        if idx!=len(vid_rels)-1:
+            AnswerString +=","
+    return AnswerString
+
+def get_pvsg_VideoQandAPairs(vid_data, correct_object_ids=False):
+    QnAPairs = []
+    vid_qna = vid_data['qa_pairs']
+    for idx, vid_qna in enumerate(vid_qna):
+        # time_point = vid_qna["time"]
+        Question = vid_qna["question"]
+        Answer = vid_qna["answer"]
+
+        if correct_object_ids:
+           object_id_pattern_in_descr = r"\((\d+)\)"
+           Question = re.sub(object_id_pattern_in_descr, r".\1", Question).replace(" .", ".")
+           Answer = re.sub(object_id_pattern_in_descr, r".\1", Answer).replace(" .", ".")
+
+
+        QnASeq = [{
+          "from": "human",
+          "value": f"<video>\n{Question}"
+        },
+        {
+          "from": "gpt",
+          "value": Answer
+        }]
+        QnAPairs.append(QnASeq)
+
+    return QnAPairs
+
+def get_pvsg_VideoSummary(vid_data):
+    AnswerString = vid_data['summary']
+    return AnswerString
