@@ -1,17 +1,18 @@
 #!/bin/bash
-JSON_FOLDER="/home/jbhol/dso/gits/LLaVA-NeXT/data_prep/data/AG_llava_annotations_v5_3"
-IMAGE_FOLDER="/groups/sernam/datasets/ActionGenome/ActionGenome/videos"
-VIDEO_FOLDER="/groups/sernam/datasets/ActionGenome/ActionGenome/videos"
+JSON_FOLDER="/home/jbhol/dso/gits/LLaVA-NeXT/data_prep/data/video_llava_vidvrd_annotations_v5_3_shuffled"
+IMAGE_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/videos"
+VIDEO_FOLDER="/home/jbhol/dso/gits/VRDFormer_VRD/data/vidvrd/videos"
 cd /home/jbhol/dso/gits/Video-LLaVA
 
 ##${JSON_FOLDER}/videochatgpt_tune_part1.json ${JSON_FOLDER}/videochatgpt_tune_part2.json ${JSON_FOLDER}/videochatgpt_tune_part3.json ${JSON_FOLDER}/videochatgpt_tune_part4.json ${JSON_FOLDER}/videochatgpt_tune_part5.json ${JSON_FOLDER}/videochatgpt_tune_part6.json ${JSON_FOLDER}/videochatgpt_tune_part7.json ${JSON_FOLDER}/videochatgpt_tune_part8.json ${JSON_FOLDER}/videochatgpt_tune_part9.json ${JSON_FOLDER}/videochatgpt_tune_part10.json ${JSON_FOLDER}/videochatgpt_tune_part11.json ${JSON_FOLDER}/videochatgpt_tune_part12.json 
-##${JSON_FOLDER}/videochatgpt_tune_part1.json 
+##${JSON_FOLDER}/videochatgpt_tune_part1.json
+## ${JSON_FOLDER}/videochatgpt_tune_part1.json ${JSON_FOLDER}/videochatgpt_tune_part2.json ${JSON_FOLDER}/videochatgpt_tune_part3.json ${JSON_FOLDER}/videochatgpt_tune_part4.json ${JSON_FOLDER}/videochatgpt_tune_part5.json ${JSON_FOLDER}/videochatgpt_tune_part6.json ${JSON_FOLDER}/videochatgpt_tune_part7.json ${JSON_FOLDER}/videochatgpt_tune_part8.json ${JSON_FOLDER}/videochatgpt_tune_part9.json
 HF_DATASETS_OFFLINE=1 TRANSFORMERS_OFFLINE=0 deepspeed  --master_port 24223  "videollava/train/train_mem.py" \
     --lora_enable True --lora_r 256 --lora_alpha 512 --mm_projector_lr 2e-5 \
     --deepspeed /lustre/fs1/home/jbhol/dso/gits/Video-LLaVA/scripts/zero2_offload.json \
     --model_name_or_path lmsys/vicuna-7b-v1.5 \
     --version v1 \
-    --data_path  ${JSON_FOLDER}/videochatgpt_tune_AG_part0.json  \
+    --data_path  ${JSON_FOLDER}/videochatgpt_tune_part0.json ${JSON_FOLDER}/videochatgpt_tune_part1.json ${JSON_FOLDER}/videochatgpt_tune_part2.json ${JSON_FOLDER}/videochatgpt_tune_part3.json ${JSON_FOLDER}/videochatgpt_tune_part4.json ${JSON_FOLDER}/videochatgpt_tune_part5.json ${JSON_FOLDER}/videochatgpt_tune_part6.json ${JSON_FOLDER}/videochatgpt_tune_part7.json ${JSON_FOLDER}/videochatgpt_tune_part8.json ${JSON_FOLDER}/videochatgpt_tune_part9.json   \
     --image_folder ${IMAGE_FOLDER} \
     --image_tower LanguageBind/LanguageBind_Image \
     --video_folder ${VIDEO_FOLDER} \
@@ -24,7 +25,7 @@ HF_DATASETS_OFFLINE=1 TRANSFORMERS_OFFLINE=0 deepspeed  --master_port 24223  "vi
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir /home/jbhol/dso/gits/Video-LLaVA/checkpoints/[lora]video_llava_AG_annotations_v5_3_p00_e01/videollava-7b-lora \
+    --output_dir /home/jbhol/dso/gits/Video-LLaVA/checkpoints/vrd/[lora]video_llava_VRD_annotations_v5_3_p09_e01/videollava-7b-lora \
     --num_train_epochs 1 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
