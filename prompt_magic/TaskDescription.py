@@ -6,6 +6,185 @@ vidvrd_predicates_numbered = """1.jump right 2.stand left 3.taller 4.jump past 5
 vidvrd_objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse 7.monkey 8.fox 9.elephant 10.lion 11.giant_panda 12.airplane 13.whale 14.watercraft 15.car 16.bird 17.cattle 18.rabbit 19.snake 20.frisbee 21.motorcycle 22.ball 23.domestic_cat 24.bear 25.red_panda 26.lizard 27.skateboard 28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
 
 
+# """
+# Example: 
+# If frame height,width is (480,280).
+# and given bounding box pairs by frames : { 
+# 'frame-0': [[[210.0, 267.3, 403.2, 267.3],[252.0, 8.1, 21.0, 8.1]]],
+# 'frame-1': [[[210.0, 267.3, 403.2, 267.3],[210.0, 251.1, 222.6, 256.5]]], 
+# 'frame-2': [[[210.0, 267.3, 403.2, 267.3],[252.0, 8.1, 21.0, 8.1]],[[210.0, 267.3, 403.2, 267.3],[210.0, 251.1, 222.6, 256.5]]]    
+# }
+# Answer:
+# #sg_start
+# { 
+#   'frame-0': {
+#     'objects': [[{'person-2': [210.0, 267.3, 403.2, 267.3]}, {'phone/camera-5': [252.0, 8.1, 21.0, 8.1]}]],
+#     'relations':{
+#         'attention': [['person-2','looking at','phone/camera-5']],
+#         'contacting': [['person-2','holding','phone/camera-5']],
+#         'spatial': [['phone/camera-5','in front of','person-2']]
+#     }
+#   },
+#   'frame-1': {
+#     'objects': [[{'person-2': [210.0, 267.3, 403.2, 267.3]}, {'pillow-7': [210.0, 251.1, 222.6, 256.5]}]],
+#     'relations':{
+#         'attention': [['person-2','not looking at','pillow-7']],
+#         'contacting': [['person-2','holding','pillow-7']],
+#         'spatial': [['pillow-7','in front of','person-2']]
+#     }
+#   },
+#   'frame-2': { 
+#     'objects': [[{'person-2': [210.0, 267.3, 403.2, 267.3]}, {'phone/camera-5': [252.0, 8.1, 21.0, 8.1]}], [{'person-2': [210.0, 267.3, 403.2, 267.3]}, {'pillow-7': [210.0, 251.1, 222.6, 256.5]}]],
+#     'relations':{
+#         'attention': [['person-2','not looking at','pillow-7'],['person-2','looking at','phone/camera-5']], 
+#         'contacting': [['person-2','holding','pillow-7'],['person-2','holding','pillow-7']],
+#         'spatial': [['pillow-7','in front of','person-2'],['phone/camera-5','in front of','person-2']]
+#     }  
+#   }
+# }
+# """
+
+Task_description_v14_AG_with_list_GPT = """Your task is to create meaningful triplet which describe the provided video. the triplets consist of subject, relation, and object. 
+The objects are: table,chair,bag,person,doorway,medicine,cup/glass/bottle,food,floor,broom,shoe,clothes,door,doorknob,groceries,closet/cabinet,laptop,bed,shelf,blanket,sandwich,refrigerator,vacuum,box,light,phone/camera,dish,paper/notebook,mirror,book,sofa/couch,television,pillow,towel,picture,window
+
+There are three types of relationship: 1. attention 2. contacting and 3. spatial. 
+Attention relation describes if person is looking at a specific object or not, or its unsure in the scene.
+Contacting relation describes if person is interacting with object in the scene (e.g. holding, twisting). if there is not contacting, state 'not contacting'.
+Spatial relation describes location of the object with respect to the person in the scene (e.g. <window,behind,person>, <light,above,person>)
+
+The attention relations are: unsure, not looking at, looking at.
+The contacting relations are: not contacting, sitting on, leaning on, other relationship, holding, touching, twisting, eating, drinking from, standing on,wearing,lying on,carrying,wiping,covered by,writing on,have it on the back.
+The spatial relations are: in front of, beneath, behind, on the side of, in, above.
+
+Step-1: List all unique objects present in the provided video using the objects list provided and assign random IDs to them for tracking. 
+Step-2: Describe attention and contacting relationship for person and objects, and spatial relationship for object with respect to person.
+Step-3: Provide triplets in the format <object-id,relation,object-id> using Step-1 and Step-2.
+
+Example output: 
+#sg_start { "objects": ["person-1", "table-5", "laptop-3"], "triplets": { "attention":  [["person-1", "not looking at", "table-5"]], "spatial": [["laptop-3", "in front of", "person-1"],["table-5", "on the side of", "person-1"]],"contacting": [["person-1", "looking at", "laptop-3"]]}} #sg_end 
+"""
+
+
+Task_description_v14_ZS_AG_sgcls_short = """
+You are provided with a video and a set of bounding box normlized coordinates pairs in format [xmin,ymin,xmax,ymax] with a specific frame ids of the video. 
+A list of predefined objects is provided as follow: person,paper/notebook,picture,floor,blanket,window,vacuum,shoe,closet/cabinet,door,phone/camera,pillow,dish,towel,broom,doorknob,cup/glass/bottle,light,box,doorway,medicine,mirror,food,chair,book,television,sofa/couch,sandwich,bed,bag,laptop,table,clothes,groceries,shelf,refrigerator.
+
+Your task is to detect object present in the given bounding box region from the predefined list of objects.
+
+
+Given bounding box pairs by frames : { 
+'frame-0': [[[0.5, 0.99, 0.96, 0.99],[0.6, 0.03, 0.05, 0.03]]],
+'frame-1': [[[0.5, 0.99, 0.96, 0.99],[0.5, 0.93, 0.53, 0.95]]], 
+'frame-2': [[[0.5, 0.99, 0.96, 0.99],[0.6, 0.03, 0.05, 0.03]],[[0.5, 0.99, 0.96, 0.99],[0.5, 0.93, 0.53, 0.95]]]    
+}
+Follow the output format:
+#sg_start
+{
+    'frame-0': {
+        'objects': [[{'person-2': [0.5, 0.99, 0.96, 0.99]}, {'phone/camera-5': [0.6, 0.03, 0.05, 0.03]}]],
+        'relations':{
+            'attention': [['person-2','looking at','phone/camera-5']],
+            'contacting': [['person-2','holding','phone/camera-5']],
+            'spatial': [['phone/camera-5','in front of','person-2']]
+        }
+    },
+    'frame-1': {
+        'objects': [[{'person-2': [0.5, 0.99, 0.96, 0.99]}, {'pillow-7': [0.5, 0.93, 0.53, 0.95]}]],
+        'relations':{
+            'attention': [['person-2','not looking at','pillow-7']],
+            'contacting': [['person-2','holding','pillow-7']],
+            'spatial': [['pillow-7','in front of','person-2']]
+        }
+    },
+    'frame-2': { 
+        'objects': [[{'person-2': [0.5, 0.99, 0.96, 0.99]}, {'phone/camera-5': [0.6, 0.03, 0.05, 0.03]}], [{'person-2': [0.5, 0.99, 0.96, 0.99]}, {'pillow-7': [0.5, 0.93, 0.53, 0.95]}]],
+        'relations':{
+            'attention': [['person-2','not looking at','pillow-7'],['person-2','looking at','phone/camera-5']], 
+            'contacting': [['person-2','holding','pillow-7'],['person-2','holding','pillow-7']],
+            'spatial': [['pillow-7','in front of','person-2'],['phone/camera-5','in front of','person-2']]
+        }
+    }
+}
+#sg_end
+"""
+
+
+Task_description_v14_ZS_AG_sgcls = """You are provided with a video and a set of bounding box coordinates pairs in format [xmin,ymin,xmax,ymax] for specific frames (identified by frame IDs). And a list of predefined objects as follows: person,paper/notebook,picture,floor,blanket,window,vacuum,shoe,closet/cabinet,door,phone/camera,pillow,dish,towel,broom,doorknob,cup/glass/bottle,light,box,doorway,medicine,mirror,food,chair,book,television,sofa/couch,sandwich,bed,bag,laptop,table,clothes,groceries,shelf,refrigerator.
+Additionally, three types of predefined relationships are given to describe the interactions between the person and the objects across the frames.
+1. Attention=looking at,unsure,not looking at. 
+2. Spatial=behind,on the side of,in front of,above,beneath,in. 
+3. Contacting=drinking from,leaning on,standing on,covered by,eating,wearing,touching,carrying,lying on,writing on,wiping,other relationship,holding,not contacting,twisting,have it on the back,sitting on.
+Attention relationship indicates whether the person is visually focused on the object in the scene. Spatial relationship describes the object's position relative to the person within the scene. Contacting relationship specifies the physical interaction or contact between the person and the object.
+Your task is as follows,
+1. Detect object present in the given bounding box region from the predefined list of objects and assign a unique random #id to track the objects throughout the frames.
+2. Identify relationship between objects and person from the predefined list. For each [person,object] pairs give Attention and Contatcting relations in form of triplets e.g. [person,relation,object] and for each [object,person] pairs, give spatial relation in form of triplets e.g. [object,realtion,person].
+
+Example: 
+Given bounding box pairs by frames : { 
+'frame-0': [[[0.5, 0.99, 0.96, 0.99],[0.6, 0.03, 0.05, 0.03]]],
+'frame-1': [[[0.5, 0.99, 0.96, 0.99],[0.5, 0.93, 0.53, 0.95]]], 
+'frame-2': [[[0.5, 0.99, 0.96, 0.99],[0.6, 0.03, 0.05, 0.03]],[[0.5, 0.99, 0.96, 0.99],[0.5, 0.93, 0.53, 0.95]]]    
+}
+Follow the output format:
+#sg_start
+{ 
+'frame-0': {
+    'objects': {
+        {'person-2': [0.5, 0.99, 0.96, 0.99]}, 
+        {'phone/camera-5': [0.6, 0.03, 0.05, 0.03]}},
+    'relations':{
+        'attention': [['person-2','looking at','phone/camera-5']],
+        'contacting': [['person-2','holding','phone/camera-5']],
+        'spatial': [['phone/camera-5','in front of','person-2']]}},
+'frame-1': {
+    'objects': {
+        {'person-2': [0.5, 0.99, 0.96, 0.99]}, 
+        {'pillow-7': [0.5, 0.93, 0.53, 0.95]}},
+    'relations':{
+        'attention': [['person-2','not looking at','pillow-7']],
+        'contacting': [['person-2','holding','pillow-7']],
+        'spatial': [['pillow-7','in front of','person-2']]},},
+'frame-2': { 
+    'objects': {
+        {'person-2': [0.5, 0.99, 0.96, 0.99]}, 
+        {'phone/camera-5': [0.6, 0.03, 0.05, 0.03]},  
+        {'pillow-7': [0.5, 0.93, 0.53, 0.95]}},
+    'relations':{
+        'attention': [['person-2','not looking at','pillow-7'],['person-2','looking at','phone/camera-5']], 
+        'contacting': [['person-2','holding','pillow-7'],['person-2','holding','pillow-7']],
+        'spatial': [['pillow-7','in front of','person-2'],['phone/camera-5','in front of','person-2']]}  
+    }
+
+}
+#sg_end
+"""
+
+Task_description_v14_ZS_AG_predcls = """You are provided with a video and a set of [person,object] pairs, each associated with bounding box coordinates in format [xmin,ymin,xmax,ymax] for specific frames (identified by frame IDs). Additionally, three predefined types of relationships are given to describe the interactions between the person and the objects across the frames.
+
+1. Attention=looking at,unsure,not looking at. 
+2. Spatial=behind,on the side of,in front of,above,beneath,in. 
+3. Contacting=drinking from,leaning on,standing on,covered by,eating,wearing,touching,carrying,lying on,writing on,wiping,other relationship,holding,not contacting,twisting,have it on the back,sitting on.
+
+Attention relationship indicates whether the person is visually focused on the object in the scene. Spatial relationship describes the object's position relative to the person within the scene. Contacting relationship specifies the physical interaction or contact between the person and the object.
+
+Your task is to identify relationships between [person,object] and [object,person] in the provided video from the predefined list of relations.
+
+For each [person,object] pairs give Attention and Contatcting relations in form of triplets e.g. [person,relation,object] and 
+for each [object,person] pairs, give spatial relation in form of triplets e.g. [object,realtion,person].
+
+Example: 
+Given: {'frame-0': [{'person': [0.5, 0.99, 0.96, 0.99]}, {'phone/camera': [0.6, 0.03, 0.05, 0.03]}],'frame-1': [{'person': [0.5, 0.99, 0.96, 0.99]}, {'pillow': [0.5, 0.93, 0.53, 0.95]}], 'frame-2': [{'person': [0.5, 0.99, 0.96, 0.99]}, {'phone/camera': [0.6, 0.03, 0.05, 0.03]},  {'pillow': [0.5, 0.93, 0.53, 0.95]}]}
+
+Output:
+#sg_start
+{ 
+'frame-0': {'attention': [['person','looking at','phone/camera']],'contacting': [['person','holding','phone/camera']],'spatial': [['phone/camera','in front of','person']]},
+'frame-1': {'attention': [['person','not looking at','pillow']],'contacting': [['person','holding','pillow']],'spatial': [['pillow','in front of','person']]},
+'frame-2': { 'attention': [['person','not looking at','pillow'],['person','looking at','phone/camera']], 'contacting': [['person','holding','pillow'],['person','holding','pillow']],'spatial': [['pillow','in front of','person'],['phone/camera','in front of','person']]}
+}   
+#sg_end
+"""
+
 
 # Task_video_description_v1 = f"""
 #     The video containing 8 frames is provided.
@@ -148,18 +327,74 @@ vidvrd_objects_numbered = """1.antelope 2.person 3.dog 4.zebra 5.bicycle 6.horse
 28.sheep 29.squirrel 30.bus 31.sofa 32.train 33.turtle 34.tiger 35.hamster"""
 
 
-## 1 vid
-Task_description_v13_vidvrd_sam_with_list = """The objects lexicon containing 35 lexemes is numbered as follows:""" + vidvrd_objects_numbered + """ 
-and relations lexicon containing 132 lexemes is numbered as follows:""" +  vidvrd_predicates_numbered + """.
-Create action-based video scene-graph triplets by first providing a detailed description in 100-200 words using predefined lexicon with the focus on the main activities in the video (e.g., objects present, their placements, and actions). Then convert this description into [subject-id, relation, object-id] triplets using predefined lexicon, assign unique IDs to subjects and objects for tracking.
+vidvrd_action_preds = """1.bite 2.chase 3.creep 4.drive 5.fall off 6.faster 7.feed 8.fight 9.fly 10.fly with 11.follow 12.hold 13.jump 14.jump with 15.kick 16.larger 17.lie 18.lie inside 19.lie with 20.move 21.move with 22.play 23.pull 24.ride 25.run 26.run with 27.sit 28.sit inside 29.stand 30.stand inside 31.stand with 32.stop 33.stop with 34.swim 35.swim with 36.taller 37.touch 38.walk 39.walk with 40.watch"""
+vidvrd_sptial_preds = """1.toward 2.past 3.above 4.left 5.beneath 6.right 7.behind 8.away 9.front 10.next to"""
+
+Task_description_v14_vidvrd_without_list = f"""From the provided video, the task is to create meaningful action-based video scene-graph quadruplets.
+You are given predefined objects list ["""+ vidvrd_objects_numbered + """], action predicates list ["""+ vidvrd_action_preds + """] and sptial predicates list ["""+ vidvrd_sptial_preds + """].
+
+Follow the steps below to create quadruplets.
+1. Create description of the provided video using provided list of objects and predicates list.
+2. Generate meaningful scene-graph quadruplets from the obtained description from step-1. 
+
+Example: 
+    #sg_start
+    {
+        "description": "There are two lions in the scene. The smaller lion follow behind larger lion and the larger lion walk front of the smaller lion. The smaller lion stand behind the larger lion. The larger lion walk past the smaller lion. The larger lion walk next to the smaller lion for a moment.",
+        "triplets": [
+            ["10.lion-3","11.follow","7.behind","10.lion-1"],
+            ["10.lion-1","38.walk","9.front","10.lion-3"],
+            ["10.lion-3","stand","7.behind","10.lion-1"],
+            ["10.lion-1","38.walk","2.past","10.lion-3"],
+            ["10.lion-1","38.walk","10.next to","10.lion-3"]
+        ]
+    }
+    #sg_end
+
+Response:
+"""
+Task_description_v14_vidvrd_with_list_GPT_wo_obj_list = """Your task is to create meaningful quadruplets which describe the provided video. Quadruplets consist of subject, action relation, spatial relation, and object. The relationship consists of two entities: 1. action and 2. spatial. The action relations are: bite,chase,creep,drive,fall off,faster,feed,fight,fly,fly with,follow,hold,jump,jump with,kick,larger,lie,lie inside,lie with,move,move with,play,pull,ride,run,run with,sit,sit inside,stand,stand inside,stand with,stop,stop with,swim,swim with,taller,touch,walk,walk with,watch. The spatial relations are: toward,past,above,left,beneath,right,behind,away,front,next to. Step-1: List all unique objects present in the provided video using the objects list provided and assign random IDs to them for tracking. Step-2: Describe all possible relationships between objects obtained in Step-1 using the relationship lists provided. Ensure every spatial and action relation between each pair is captured in a detailed manner. For each object pair, provide a list of multiple spatial relations (e.g., front, left, right, etc.). Step-3: Provide quadruplets in the format <object-id, action, spatial, object-id> using Step-1 and Step-2, ensuring all possible spatial and action relations are described for each pair of objects. Example output: #sg_start { "objects": ["person-1", "person-2", "dog-3"], "quadruplets": [ ["person-1", "sit", "front", "person-2"],["person-1", "sit", "left", "person-2"],["person-1", "sit", "beneath", "person-2"],["person-1", "sit", "behind", "person-2"],["person-1", "sit", "next to", "dog-3"],["dog-3", "sit", "front", "person-2"],["person-2", "sit", "above", "dog-3"]] } #sg_end """
+Task_description_v14_vidvrd_with_list_GPT = """Your task is to create meaningful quadruplets which describe the provided video. Quadruplets consist of subject, action relation, spatial relation, and object. The objects are: bus,motorcycle,sheep,frisbee,antelope,turtle,lizard,airplane,train,horse,giant_panda,bird,hamster,elephant,ball,watercraft,red_panda,rabbit,bear,whale,domestic_cat,lion,bicycle,monkey,squirrel,sofa,snake,car,tiger,fox,skateboard,zebra,dog,cattle,person. The relationship consists of two entities: 1. action and 2. spatial. The action relations are: bite,chase,creep,drive,fall off,faster,feed,fight,fly,fly with,follow,hold,jump,jump with,kick,larger,lie,lie inside,lie with,move,move with,play,pull,ride,run,run with,sit,sit inside,stand,stand inside,stand with,stop,stop with,swim,swim with,taller,touch,walk,walk with,watch. The spatial relations are: toward,past,above,left,beneath,right,behind,away,front,next to. Step-1: List all unique objects present in the provided video using the objects list provided and assign random IDs to them for tracking. Step-2: Describe all possible relationships between objects obtained in Step-1 using the relationship lists provided. Ensure every spatial and action relation between each pair is captured in a detailed manner. For each object pair, provide a list of multiple spatial relations (e.g., front, left, right, etc.). Step-3: Provide quadruplets in the format <object-id, action, spatial, object-id> using Step-1 and Step-2, ensuring all possible spatial and action relations are described for each pair of objects. Example output: #sg_start { "objects": ["person-1", "person-2", "dog-3"], "quadruplets": [ ["person-1", "sit", "front", "person-2"],["person-1", "sit", "left", "person-2"],["person-1", "sit", "beneath", "person-2"],["person-1", "sit", "behind", "person-2"],["person-1", "sit", "next to", "dog-3"],["dog-3", "sit", "front", "person-2"],["person-2", "sit", "above", "dog-3"]] } #sg_end """
+
+
+
+Task_description_v14_vidvrd_without_list_Old = f"""From the provided video, create meaningful action-based video scene-graph quadruplets by first providing a detailed description in 100-200 words with the focus on the main objects and activities in the video (e.g., objects present, their placements with other main objects, and actions). Then convert this description into ["object-id", "action predicate","spatial predicate", "object-id"] quadruplets and assign unique IDs to objects for tracking.
 Note:
-    - Triplets should be strictly three entities (e.g. ["2.person-3", "12.stand next to", "3.dog-5"])
+    - Quadruplets should be strictly four entities only (e.g. ["object-id","action predicate","spatial predicate", "object-id"]).
     - The output format should be consistant as shown in below example.
+    - The objects can be one of the following ["""+ vidvrd_objects_numbered + """]
+    - The action predicates can be one of the following ["""+ vidvrd_action_preds + """]
+    - The spatial predicates can be one of the following ["""+ vidvrd_sptial_preds + """].
+    - Focus on the main objects when creating Quadruplets.
 
     Example: 
     #sg_start
     {
         "description": "The larger lion leading and the smaller lion follow behind. The larger lion walk front of the smaller lion. The smaller lion stand behind the larger lion. The larger lion walk past the smaller lion. The larger lion walk next to the smaller lion for a moment.",
+        "triplets": [["lion-3","follow","behind","lion-1"],["lion-1","walk","front","lion-3"],["lion-3","stand","behind","lion-1"],["lion-1","walk","past","lion-3"],["lion-1","walk","next to","lion-3"]]
+    }
+    #sg_end
+    
+    Response:
+"""
+
+## 1 vid
+Task_description_v13_vidvrd_sam_with_list = """The objects lexicon containing 35 lexemes is numbered as follows:""" + vidvrd_objects_numbered + """ 
+and relations lexicon containing 132 lexemes is numbered as follows:""" +  vidvrd_predicates_numbered + """.
+From the provided video, create meaningful action-based video scene-graph triplets by first providing a detailed description in 100-200 words using predefined lexicon with the focus on the main objects and activities in the video (e.g., objects present, their placements, and actions). Then convert this description into [subject-id, relation, object-id] triplets using predefined lexicon, assign unique IDs to subjects and objects for tracking.
+Note:
+    - Triplets should be only three entities (e.g. ["2.person-3", "12.stand next to", "3.dog-5"])
+    - The output format should be consistant as shown in below example.
+
+    Example: 
+    #sg_start
+    {
+        "description": "The 21.larger 10.lion leading and the smaller lion follow behind. 
+        The larger lion walk front of the smaller lion. 
+        The smaller lion stand behind the larger lion. 
+        The larger lion walk past the smaller lion. 
+        The larger lion walk next to the smaller lion for a moment.",
+
         "triplets": [
             ["10.lion-3", "44.follow behind", "10.lion-1"],
             ["10.lion-1", "18.walk front", "10.lion-3"],
@@ -172,6 +407,16 @@ Note:
     
     Response:
 """
+
+# instead of quadruplets its triplets
+# The objects are: condiment,simmering,knife,candle,shoe,basket,fan,oven,bottle,fork,wall,curtain,fence,rack,blanket,cloth,flower,guitar,vaccum,baby,child,drawer,chopstick,table,iron,book,pan,card,window,cookie,pot,carpet,camera,countertop,bucket,cake,powder,rock,sofa,sand,stand,plant,water,beverage,cart,cabinet,grass,stove,noodle,piano,switch,glasses,computer,light,mat,washer,meat,tv,pizza,paper,cup,cover,lighter,board,ballon,spoon,box,cellphone,towel,ground,adult,bed,faucet,bat,rag,tree,scissor,chair,bike,glass,plate,can,snow,egg,toy,ring,mop,racket,grain,vegetable,spray,stairs,helmet,pillow,car,bread,door,sink,gift,horse,net,floor,fridge,others,brush,cat,sky,ceiling,tray,fruit,ball,dog,microwave,spatula,hat,shelf,bench,bowl,sponge,teapot,dustbin,microphone,slide,bag,bird,glove.
+Task_description_v14_vidor_triplets_with_list_GPT = """Your task is to create meaningful triplets which describes the provided video. triplets consist of subject, relation, and object.  The relations are: sitting on,hugging,blowing,biting,closing,catching,carrying,swinging,hitting,stirring,touching,toward,pulling,kissing,walking on,feeding,hanging from,over,cleaning,playing,kicking,on,cooking,shaking hand with,guiding,licking,in,pushing,next to,in front of,playing with,jumping over,standing on,pointing to,talking to,lying on,grabbing,opening,caressing,cutting,drinking from,jumping from,watering,chasing,throwing,riding,eating,holding,running on,brushing,beside,entering,picking,wearing,stepping on,lighting,looking at. Step-1: List all unique objects present in the provided video using the objects list provided and assign random IDs to them for tracking.  Step-2: Describe all possible relationships between objects obtained in Step-1 using the relations lists provided. Ensure every relation between each pair is captured in a detailed manner. For each object pair, provide a list of multiple relations (e.g., in front of, sitting on, next to, etc.). Step-3: Provide triplets in the format [object-id, relation, object-id] using Step-1 and Step-2, ensuring all possible relations are described for each pair of objects. Example output: #sg_start { "objects": ["child-1", "ground-0", "car-6","ball-5"],"triplets": [["child-1", "standing on", "ground-0"],["child-1", "holding", "ball-5"],["child-1", "throwing", "ball"],["car-6", "on", "ground-0"],["child-4", "catching" "ball-5"]] } #sg_end """
+
+## The objects are: condiment,simmering,knife,candle,shoe,basket,fan,oven,bottle,fork,wall,curtain,fence,rack,blanket,cloth,flower,guitar,vaccum,baby,child,drawer,chopstick,table,iron,book,pan,card,window,cookie,pot,carpet,camera,countertop,bucket,cake,powder,rock,sofa,sand,stand,plant,water,beverage,cart,cabinet,grass,stove,noodle,piano,switch,glasses,computer,light,mat,washer,meat,tv,pizza,paper,cup,cover,lighter,board,ballon,spoon,box,cellphone,towel,ground,adult,bed,faucet,bat,rag,tree,scissor,chair,bike,glass,plate,can,snow,egg,toy,ring,mop,racket,grain,vegetable,spray,stairs,helmet,pillow,car,bread,door,sink,gift,horse,net,floor,fridge,others,brush,cat,sky,ceiling,tray,fruit,ball,dog,microwave,spatula,hat,shelf,bench,bowl,sponge,teapot,dustbin,microphone,slide,bag,bird,glove.
+Task_description_v14_vidor_quadruplets_with_list_GPT = """Your task is to create meaningful quadruplets which describes the provided video. Quadruplets consist of subject, action relation, spatial relation, and object.  The relationship consists of two entities: 1. action and 2. spatial. The action relations are: sitting,hugging,blowing,biting,closing,catching,carrying,swinging,hitting,stirring,touching,pulling,kissing,walking,feeding,hanging,cleaning,playing,kicking,cooking,shaking hand,guiding,licking,pushing,playing,jumping,standing,pointing,talking,lying,grabbing,opening,caressing,cutting,drinking,jumping,watering,chasing,throwing,riding,eating,holding,running,brushing,entering,picking,wearing,stepping,lighting,looking. The spatial relations are: on,toward,past,above,left,beneath,right,behind,away,front,over,in,beside,next to,with,in front of,to,from,at,None. Step-1: List all unique non repeating objects present in the provided video using the objects list provided and assign random IDs to them for tracking. Step-2: Describe all possible relationships between objects obtained in Step-1 using the relationship lists provided. Ensure every spatial and action relation between each pair is captured in a detailed manner. For each object pair, provide a list of multiple spatial relations (e.g., front, left, right, etc.). Step-3: Provide quadruplets in the format [subject-id, action relation, spatial relation, object-id] using Step-1 and Step-2, ensuring all possible spatial and action relations are described for each pair of objects. Example output: #sg_start { "objects": ["child-1", "ground-0", "car-6","ball-5"],"quadruplets": [ ["child-1", "standing","on", "ground-0"],["child-1", "holding","None", "ball-5"],["child-1", "throwing", "None", "ball"],["car-6", "None","on", "ground-0"],["child-4", "catching","None" "ball-5"]] } #sg_end """
+
+Task_description_v14_vidor_with_list_GPT = """Your task is to create meaningful quadruplets which describe the provided video. Quadruplets consist of subject, action relation, spatial relation, and object. The objects are: bus,motorcycle,sheep,frisbee,antelope,turtle,lizard,airplane,train,horse,giant_panda,bird,hamster,elephant,ball,watercraft,red_panda,rabbit,bear,whale,domestic_cat,lion,bicycle,monkey,squirrel,sofa,snake,car,tiger,fox,skateboard,zebra,dog,cattle,person. The relationship consists of two entities: 1. action and 2. spatial. The action relations are: bite,chase,creep,drive,fall off,faster,feed,fight,fly,fly with,follow,hold,jump,jump with,kick,larger,lie,lie inside,lie with,move,move with,play,pull,ride,run,run with,sit,sit inside,stand,stand inside,stand with,stop,stop with,swim,swim with,taller,touch,walk,walk with,watch. The spatial relations are: toward,past,above,left,beneath,right,behind,away,front,next to. Step-1: List all unique objects present in the provided video using the objects list provided and assign random IDs to them for tracking. Step-2: Describe all possible relationships between objects obtained in Step-1 using the relationship lists provided. Ensure every spatial and action relation between each pair is captured in a detailed manner. For each object pair, provide a list of multiple spatial relations (e.g., front, left, right, etc.). Step-3: Provide quadruplets in the format <object-id, action, spatial, object-id> using Step-1 and Step-2, ensuring all possible spatial and action relations are described for each pair of objects. Example output: #sg_start { "objects": ["person-1", "person-2", "dog-3"], "quadruplets": [ ["person-1", "sit", "front", "person-2"],["person-1", "sit", "left", "person-2"],["person-1", "sit", "beneath", "person-2"],["person-1", "sit", "behind", "person-2"],["person-1", "sit", "next to", "dog-3"],["dog-3", "sit", "front", "person-2"],["person-2", "sit", "above", "dog-3"]] } #sg_end """
+
 
 ## 1 vid
 Task_description_v13_sam_with_list = """The objects lexicon containing 125 lexemes is numbered as follows:""" + opvsg_objects_numbered + """ 

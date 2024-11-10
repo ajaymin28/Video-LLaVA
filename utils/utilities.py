@@ -70,7 +70,7 @@ def get_substring_between(s, start_substring, end_substring):
 
         start_index = start_index + len(start_substring)
         # Extract the substring from the start to the end substring
-        return s[start_index:end_index + len(end_substring)]
+        return s[start_index:end_index]
     
     except Exception as e:
         return str(e)
@@ -500,7 +500,15 @@ def getFramesForObject(vid_data, Subject_id):
             return frames_
     return "None"
 
-def unnormbb(pred_box, mask):
+
+def unnormbb(pred_box, mask, normlize=False, decimal=2, img_h=None, img_w=None):
+    if normlize:
+        pred_box[0] = round(pred_box[0]/img_w, decimal)
+        pred_box[2] = round(pred_box[2]/img_w, decimal)
+        pred_box[1] = round(pred_box[1]/img_h, decimal)
+        pred_box[3] = round(pred_box[3]/img_h, decimal)
+        return pred_box
+
     pred_box[0] = int(pred_box[0]*mask.shape[1])
     pred_box[2] = int(pred_box[2]*mask.shape[1])
     pred_box[1] = int(pred_box[1]*mask.shape[0])
@@ -624,6 +632,87 @@ def validate_model_response(model_response):
 def remove_triplet_indexes(triplet):
     return [remove_idx(element) for element in triplet]
 
+
+def pre_clean_prediction_data_onevision_v14_AG(model_response, fileData=None, remove_entity_idx=False, contains_temporal_entity=False):
+    """
+    Quadruplets for spatial + action predicates
+    """
+    block_triplets = {
+        "quadruplets": [[] for i in range(8)],
+        "triplets": [[] for i in range(8)],
+        "scene": [],
+        "description": [],
+        "objects": []
+    }
+    prediction_data = model_response
+    prediction_data = prediction_data.strip("</s>").lower()
+
+    if "#sg_start" in prediction_data and "#sg_end" in prediction_data:
+
+        # print(cleanString)
+        try:
+            cleanString = get_substring_between(s=prediction_data,start_substring="#sg_start",end_substring="#sg_end").strip()
+            # comment_str = "// This triplet is not necessary as it does not provide additional information.\n"
+            # if comment_str in cleanString:
+            #     cleanString = cleanString.replace(comment_str, "")
+        except Exception as e:
+            print("error getting sgblock data")
+    else:
+        cleanString = prediction_data
+
+    # cleanString = re.sub(r"(frame-\d+)", r"'\1'", cleanString)
+
+    # print(cleanString)
+    try:
+        # print("evaluating")
+        evaluated_string_json = eval(cleanString)
+        for key,frame_data in evaluated_string_json.items():
+            # print(key)
+            if key=="scene":
+                block_triplets["scene"].append(frame_data)
+            elif key=="description":
+                block_triplets["description"].append(frame_data)
+            elif key=="objects":
+                for obj in frame_data:
+                    block_triplets["objects"].append(obj)
+            elif key=="triplets":
+
+                def append_to_block(triplData, block_triplets):
+                    for j in range(8):
+                        for trp in triplData:
+                            block_triplets["triplets"][j].append(trp)
+                    return block_triplets
+
+                # import pdb
+                # pdb.set_trace()
+
+                try:
+                    attention = frame_data["attention"]
+                    block_triplets = append_to_block(attention,block_triplets)
+
+                except Exception as e:
+                    print(f"error parsing: triplets: {frame_data}")
+
+                try:
+                    spatial = frame_data["spatial"]
+                    block_triplets = append_to_block(spatial,block_triplets)
+                except Exception as e:
+                    print(f"error parsing: triplets: {frame_data}")
+
+                try:
+                    contacting = frame_data["contacting"]
+                    block_triplets = append_to_block(contacting,block_triplets)
+                except Exception as e:
+                    print(f"error parsing: triplets: {frame_data}")
+
+                    
+    except Exception as e:
+        print(e, fileData)
+        # print("model response", model_response)
+        pass
+
+
+    return block_triplets
 
 def pre_clean_prediction_data_onevision_v14_vrd(model_response, fileData=None, remove_entity_idx=False, contains_temporal_entity=False):
     """
@@ -968,59 +1057,75 @@ def pre_clean_prediction_data_v18_withbb(model_response):
     frame_triplets = []
     prediction_data = model_response
     prediction_data = prediction_data.strip("</s>")
-    framewiseTriplets = prediction_data.split(f"{SGSpecialTokens.VIDEO_FRAME_ID}")[1:]
+
+    bbSubString = get_substring_between(s=prediction_data,start_substring="#bb_start",end_substring="#bbend").strip()
+    bbSubString = bbSubString
+    
+    bbox_Data = {}
+    try:
+        bbox_Data = eval(bbSubString)
+    except Exception as e:
+        print(f"error parsing bbox data from str: {bbSubString}")
+
+    parsed_data["triplets_bb"] = bbox_Data
+
+    tripletSubstring = get_substring_between(s=prediction_data,start_substring="#sg_start",end_substring="#sg_end")
+    tripletSubstring = tripletSubstring.split(f"{SGSpecialTokens.VIDEO_FRAME_ID}")[1:]
 
     special_tokens = SGSpecialTokens.get_tokens()
-    for cnt_idx, ftriplets in enumerate(framewiseTriplets):
+    for cnt_idx, ftriplets in enumerate(tripletSubstring):
         if cnt_idx>7:
             break
 
-        for spetok in special_tokens:
-            ftriplets = ftriplets.replace(f"{spetok}", "")
+        # for spetok in special_tokens:
+        #     ftriplets = ftriplets.replace(f"{spetok}", "")
 
         # ftriplets = ftriplets.replace(f":", ",")
-        ftriplets = ftriplets.split(";")
+        ftriplets = ftriplets.strip().split(";")
 
         current_frame_triplets = []
         current_frame_triplets_bb = []
         for ftr in ftriplets:
-
             ftr_temp = ftr.split(":")
+
+            if ftr_temp=="":
+                continue
+
             if len(ftr_temp)!=3:
                 print(f"invalid triplet length : {ftr_temp}")
                 continue
             
             subject_, predicate_, object_ = ftr_temp # [person_[0.28, 0.96, 0.72, 0.96],  not looking at,  mirror_[0.0, 0.96, 0.08, 0.96]
-            subject_ = subject_.split("_")
-            if len(subject_)!=2:
-                print(f"invalid subject token: {subject_}")
-                continue
+            # subject_ = subject_.split("_")
+            # if len(subject_)!=2:
+            #     print(f"invalid subject token: {subject_}")
+            #     continue
             
-            subject_name, subject_bb = subject_[0],subject_[1]
-            subject_name = subject_name.strip("[").strip("]")
+            # subject_name, subject_bb = subject_[0],subject_[1]
+            # subject_name = subject_name.strip("[").strip("]")
 
-            subject_bb = subject_bb.strip("[").strip("]")
-            subject_bb = eval(subject_bb)
+            # subject_bb = subject_bb.strip("[").strip("]")
+            # subject_bb = eval(subject_bb)
 
-            object_ = object_.split("_")
-            if len(object_)!=2:
-                print(f"invalid object_ token: {object_}")
-                continue
+            # object_ = object_.split("_")
+            # if len(object_)!=2:
+            #     print(f"invalid object_ token: {object_}")
+            #     continue
 
-            object_name, object_bb = object_[0],object_[1]
-            object_name = object_name.strip("[").strip("]")
-            object_bb = object_bb.strip("[").strip("]")
-            try:
-                object_bb = eval(object_bb)
-            except Exception as e:
-                print(f"error parsing bounding box: {object_bb}")
+            # object_name, object_bb = object_[0],object_[1]
+            # object_name = object_name.strip("[").strip("]")
+            # object_bb = object_bb.strip("[").strip("]")
+            # try:
+            #     object_bb = eval(object_bb)
+            # except Exception as e:
+            #     print(f"error parsing bounding box: {object_bb}")
 
-            current_frame_triplets.append([subject_name,predicate_,object_name])
-            current_frame_triplets_bb.append([subject_bb,object_bb])
+            current_frame_triplets.append([subject_,predicate_,object_])
+            # current_frame_triplets_bb.append([subject_bb,object_bb])
         # frame_triplets.append([current_frame_triplets,current_frame_triplets_bb])
 
         parsed_data["triplets"].append(current_frame_triplets)
-        parsed_data["triplets_bb"].append(current_frame_triplets_bb)
+        # parsed_data["triplets_bb"].append(current_frame_triplets_bb)
     
     return parsed_data
 
@@ -1238,6 +1343,29 @@ prompts_list = {
       """
     ],
 
+    "AG_Prompt_sg_with_center" : [
+      """
+      You are given a list of predefined objects={objects_list} and three different types of predicates list. 
+      1.Attention={attention_relations},
+      2.Spatial={spatial_relations} and 
+      3.Contacting={contacting_relations}
+
+      Attention relationship indicates whether the person is visually focused on the object in the scene.
+      Spatial relationship describes the object's position relative to the person within the scene.
+      Contacting relationship specifies the physical interaction or contact between the person and the object.
+
+      Your task is to identify relationships between person and objects visible in the provided video frame-by-frame from the predefined list along with their object center locations in format [x,y].
+      """
+    ],
+
+    
+
+    "AG_Prompt_bbonly" : [
+      """
+      Generate detailed frame-by-frame bounding box coordinates in the format [xmin, ymin, xmax, ymax] for each visible object in the provided video.
+      """
+    ],
+
     # """
     # Generate frame-by-frame scene graph for the provided video
     #    Use the following list to select the object {}, 
@@ -1304,7 +1432,7 @@ def getFramesForObject(vid_data, Subject_id):
     return "None"
 
 
-def getbbcenter(bb):
+def getbbcenter(bb,decimal_points=2,norm_center=False,frame_size=[]):
    if len(bb)<4:
     return []
    x1,y1,x2,y2 = bb
@@ -1312,7 +1440,17 @@ def getbbcenter(bb):
    bb_h = (y2 - y1)/2
    xcenter = x1 + bb_w
    ycenter = y1 + bb_h
-   return [round(xcenter,3), round(ycenter,3)]
+   if norm_center:
+       if frame_size!=[]:
+            if len(frame_size)==2:
+               h,w = frame_size
+            elif len(frame_size)==3:
+               h,w,c = frame_size
+            
+            xcenter = round((xcenter/w),decimal_points)
+            ycenter = round((ycenter/h),decimal_points)
+
+   return [round(xcenter,decimal_points), round(ycenter,decimal_points)]
 
 def getListofCategoryString(data_root, vid_objects, vid_data, addObjectId=False, addFrames=False, addBB=False , uniform_sampling_idx=8):
     
@@ -1646,6 +1784,7 @@ def get_AG_annotations_framewise(AG_ANNOTATIONS_DIR,subset="train"):
                 if objAnnot["visible"]:
 
                     obj_bb =  list(objAnnot["bbox"])
+                    # print("converted list", obj_bb)
 
                     frame_h,frame_w = person_data['bbox_size']
                     unnorm_person_bb = person_data["bbox"]
@@ -1653,7 +1792,6 @@ def get_AG_annotations_framewise(AG_ANNOTATIONS_DIR,subset="train"):
                         unnorm_person_bb = list(unnorm_person_bb[0])
                     else:
                         unnorm_person_bb = []
-
                     if len(unnorm_person_bb)==0 or obj_bb==None:
                         continue
                     
@@ -1672,7 +1810,7 @@ def get_AG_annotations_framewise(AG_ANNOTATIONS_DIR,subset="train"):
                         if "_" in spa_rel: spa_rel = spa_rel.replace("_", " ")
                         trip = [obj_class, spa_rel, "person"]
                         frame_triplets.append(trip)
-                        frame_triplets_bb.append([unnorm_person_bb,obj_bb,(frame_h,frame_w)])
+                        frame_triplets_bb.append([obj_bb,unnorm_person_bb,(frame_h,frame_w)])
 
                     for cont_rel in contacting_relationship:
                         if "_" in cont_rel: cont_rel = cont_rel.replace("_", " ")

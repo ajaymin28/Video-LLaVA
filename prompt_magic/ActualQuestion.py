@@ -1,6 +1,6 @@
 from prompt_magic import ListOfObjectsAndPredicates
-import importlib
-importlib.reload(ListOfObjectsAndPredicates)
+# import importlib
+# importlib.reload(ListOfObjectsAndPredicates)
 
 # Actual_instructions = """
 #     For the step 3 use the list of Objects: [cattle, house, door, mountains, bottle, table, sofa]

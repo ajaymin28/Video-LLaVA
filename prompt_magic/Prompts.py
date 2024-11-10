@@ -1,42 +1,51 @@
 from prompt_magic import TaskDescription, ActualQuestion, InContextExamples, ListOfObjectsAndPredicates as objectspredicates
-import importlib
-importlib.reload(TaskDescription)
-importlib.reload(ActualQuestion)
-importlib.reload(InContextExamples)
-importlib.reload(objectspredicates)
+# import importlib
+# importlib.reload(TaskDescription)
+# importlib.reload(ActualQuestion)
+# importlib.reload(InContextExamples)
+# importlib.reload(objectspredicates)
 
+v14_Task_description_AG_triplets_ZS = TaskDescription.Task_description_v14_AG_with_list_GPT
+
+
+v14_Task_description_AG_triplets_sgcls = TaskDescription.Task_description_v14_ZS_AG_sgcls_short
+v14_Task_description_AG_triplets_precls  = TaskDescription.Task_description_v14_ZS_AG_predcls
+
+v14_Task_description_vidor_quadruplets_without_obj_list = TaskDescription.Task_description_v14_vidor_quadruplets_with_list_GPT
+v14_prompt_vidor_quadruplets_withIds_without_obj_list = f"""{v14_Task_description_vidor_quadruplets_without_obj_list}"""
+
+v14_Task_description_vidor_triplets_without_obj_list = TaskDescription.Task_description_v14_vidor_triplets_with_list_GPT
+v14_prompt_vidor_triplets_withIds_without_obj_list = f"""{v14_Task_description_vidor_triplets_without_obj_list}"""
+
+v14_Task_description_vidvrd_without_list = TaskDescription.Task_description_v14_vidvrd_with_list_GPT
+v14_prompt_vidvrd_withIds_without_list = f"""{v14_Task_description_vidvrd_without_list}"""
+
+v14_Task_description_vidvrd_with_list = TaskDescription.Task_description_v14_vidvrd_with_list_GPT
+v14_prompt_vidvrd_withIds_with_list = f"""{v14_Task_description_vidvrd_with_list}"""
 
 V13_TaskDescription_withids_temporal = TaskDescription.Task_description_v13_with_ids_temporal
-v13_prompt_withIds_temporal = f"""{V13_TaskDescription_withids_temporal}
-"""
+v13_prompt_withIds_temporal = f"""{V13_TaskDescription_withids_temporal}"""
 
 V13_TaskDescription_vidvrd_withids = TaskDescription.Task_description_v13_vidvrd_sam_with_list
-v13_prompt_vidvrd_withIds = f"""{V13_TaskDescription_vidvrd_withids}
-"""
+v13_prompt_vidvrd_withIds = f"""{V13_TaskDescription_vidvrd_withids}"""
 
 V13_TaskDescription_withids = TaskDescription.Task_description_v13_sam_with_list
-v13_prompt_withIds = f"""{V13_TaskDescription_withids}
-"""
+v13_prompt_withIds = f"""{V13_TaskDescription_withids}"""
 
 V13_TaskDescription_sam = TaskDescription.Task_description_v13_sam
-v13_prompt_sam = f"""{V13_TaskDescription_sam}
-"""
+v13_prompt_sam = f"""{V13_TaskDescription_sam}"""
 
 V13_TaskDescription_ = TaskDescription.Task_description_v13
-v13_prompt = f"""{V13_TaskDescription_}
-"""
+v13_prompt = f"""{V13_TaskDescription_}"""
 
 V12_TaskDescription_ = TaskDescription.Task_description_v12
-v12_prompt = f"""{V12_TaskDescription_}
-"""
+v12_prompt = f"""{V12_TaskDescription_}"""
 
 V11_TaskDescription_ = TaskDescription.Task_description_v11
-v11_prompt = f"""{V11_TaskDescription_}
-"""
+v11_prompt = f"""{V11_TaskDescription_}"""
 
 V10_TaskDescription_ = TaskDescription.Task_description_v10
-v10_prompt = f"""{V10_TaskDescription_}
-"""
+v10_prompt = f"""{V10_TaskDescription_}"""
 
 V9_TaskDescription_ = TaskDescription.Task_description_v9
 v9_prompt = f"""{V9_TaskDescription_}
