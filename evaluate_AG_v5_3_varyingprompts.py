@@ -403,6 +403,9 @@ if __name__=="__main__":
             Block_frame_ids = block_data["frame_idxes"]
             Block_GT_Triplets = block_data["triplets"]
 
+            if len(Block_frame_ids)<8:
+                continue
+
             if video_id not in llava_response_json:
                 llava_response_json[video_id] = {}
                 llava_raw_response_json[video_id] = {}
