@@ -104,9 +104,10 @@ def init_main(args):
     disable_torch_init()
 
     model_name = get_model_name_from_path(args.model_path)
+    args.model_base = None
     tokenizer, model, processor, context_len = load_pretrained_model(args.model_path, args.model_base, model_name,
                                                                      args.load_8bit, args.load_4bit,
-                                                                     device=args.device, cache_dir=args.cache_dir,use_custom_tokenizer=True)
+                                                                     device=args.device, cache_dir=args.cache_dir,use_custom_tokenizer=False)
     
     
     ## Jaimin Changes
@@ -271,9 +272,9 @@ if __name__=="__main__":
     dataset_name_to_save = dataset_name
 
     # TODO SET PATHS here for propts
-    exec(open("/root/jbhoi/gits/Video-LLaVA/picklePrompt.py").read())
+    exec(open("/home/jbhol/dso/gits/Video-LLaVA/picklePrompt.py").read())
     defaultPrompt = "None"
-    with open('/root/jbhoi/gits/Video-LLaVA/prompts.pkl', 'rb') as handle:
+    with open('/home/jbhol/dso/gits/Video-LLaVA/prompts.pkl', 'rb') as handle:
         b = pickle.load(handle)
         defaultPrompt = b["version_14_AG_ZS_triplets"]
 
@@ -288,8 +289,8 @@ if __name__=="__main__":
         #     raise Exception("Require prev_eval data path to continue previous eval")
 
     splits = ["test"]
-    VIDEO_ROOT_PATH = "/root/jbhoi/gits/ActionGenome/videos"
-    AG_ANNOTATIONS_DIR = "/root/jbhoi/gits/ActionGenome/annotations"
+    VIDEO_ROOT_PATH = "/groups/sernam/datasets/ActionGenome/ActionGenome/videos"
+    AG_ANNOTATIONS_DIR = "/groups/sernam/datasets/ActionGenome/ActionGenome/annotations"
     CHUNK_N = 1000 # Q&A will be chunked into CHUNK_N parts
     AG_Annotations,dataset_meta,video_frame_data = get_AG_annotations_framewise(AG_ANNOTATIONS_DIR=AG_ANNOTATIONS_DIR, 
                                                                                 subset=splits[0])

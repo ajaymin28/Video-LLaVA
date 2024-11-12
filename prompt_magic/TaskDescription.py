@@ -60,7 +60,7 @@ Step-1: List all unique objects present in the provided video using the objects 
 Step-2: Describe attention and contacting relationship for person and objects, and spatial relationship for object with respect to person.
 Step-3: Provide triplets in the format <object-id,relation,object-id> using Step-1 and Step-2.
 
-Example output: 
+Follow the example output: 
 #sg_start { "objects": ["person-1", "table-5", "laptop-3"], "triplets": { "attention":  [["person-1", "not looking at", "table-5"]], "spatial": [["laptop-3", "in front of", "person-1"],["table-5", "on the side of", "person-1"]],"contacting": [["person-1", "looking at", "laptop-3"]]}} #sg_end 
 """
 

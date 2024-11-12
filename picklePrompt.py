@@ -32,6 +32,6 @@ Prompts_ = {
     "version_1": Prompts.v1_prompt
 }
 
-with open("/root/jbhoi/gits/Video-LLaVA/prompts.pkl", "wb") as f:
+with open("/home/jbhol/dso/gits/Video-LLaVA/prompts.pkl", "wb") as f:
     pickle.dump(Prompts_, f, protocol=pickle.HIGHEST_PROTOCOL)
     # pickle.dump(Prompts,f)
