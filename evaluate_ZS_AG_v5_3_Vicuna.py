@@ -226,7 +226,7 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-path", type=str, default="LanguageBind/Video-LLaVA-7B")
-    parser.add_argument("--model-base", type=str, default="")
+    parser.add_argument("--model-base", type=str, default=None)
     parser.add_argument("--cache-dir", type=str, default="/dev/shm")
     parser.add_argument("--file", nargs='+', type=str, required=False)
     parser.add_argument("--device", type=str, default="cuda")
@@ -431,6 +431,7 @@ if __name__=="__main__":
             file = os.path.join(VIDEO_ROOT_PATH, video_id)
             file = file if isinstance(file, list) else [file]
             outputs_unclean = get_model_output(file=file,batch_of_frames=Block_frame_ids, prompt=sgcls_prompt)
+
             outputs = pre_clean_prediction_data_onevision_v14_AG(outputs_unclean["triplets"])
 
             # import pdb
